@@ -19,7 +19,7 @@ GEMINI_3_1_PRO = {
 }
 
 OPENAI_GPT_5_4 = {
-    "model": "gpt-5.4",
+    "model": "gpt-5.4-mini",
     "temperature": 1,
     "reasoning": {"effort": "medium", "summary": "auto"},
     "output_version": "responses/v1",
@@ -37,8 +37,9 @@ VERTEX_GEMINI_3_1_PRO = {
 }
 
 AZURE_OPENAI_GPT_5_4 = {
-    "azure_deployment": "gpt-5-4-mini",
-    "api_version": "2025-03-01-preview",
+    "azure_deployment": "gpt-5-4-mini-2",
+    "model_name": "gpt-5.4-mini",
+    "api_version": "2025-04-01-preview",
     "temperature": 1,
     "reasoning": {"effort": "medium", "summary": "auto"},
     "output_version": "responses/v1",

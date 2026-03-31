@@ -1,0 +1,168 @@
+
+==================================================
+Testing: Anthropic Claude Sonnet 4.6
+==================================================
+{ 'extras': { 'signature': 'Ev0BClsIDBgCKkD8nVsvcoaMdDtIkoDiFFl4D9bOY7h54qaqhvJaE6oYHIjTMTK8iIHYuEK9pPh8ks/HyBIG45vXgFtUNFeiFLiKMhFjbGF1ZGUtc29ubmV0LTQtNjgAEgxNBLvyXnj2YtZk6ywaDG8+Y1ZG5KtySRxuqyIwVf0KkHhN7IyVNdmojbISnb1F8nKq4jxKHyRXOWIL8vOExHra45yxtoW6KzYmM1x0KlAdyJENsaHsf/TaOtheKQV9ogga33evCM2Dn55Z1esnNwE1tRZ3NbJh6C5b/lfEMkPJRlvAAXUmQNF0PA+gdQAYQMeKYo0nTvnbas/wEdhFChgB'},
+  'index': 0,
+  'reasoning': 'Let me think of something interesting and express it '
+               'creatively.',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning', 'index', 'extras']
+{ 'index': 1,
+  'text': "**The ocean is essentially Earth's memory.**\n"
+          '\n'
+          'Every drop of seawater has cycled through ancient storms, dinosaur '
+          'bloodstreams, and the tears of people long forgotten. When you '
+          "stand at the shore, the waves aren't just touching your feet — "
+          "they're delivering a message from every living thing that ever "
+          'existed.',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'index']
+Block types in response: ['reasoning', 'text']
+
+==================================================
+Testing: Gemini 3.1 Pro
+==================================================
+{ 'reasoning': '**Initiating Thought Generation**\n'
+               '\n'
+               "Okay, I'm analyzing the request and defining its parameters. I "
+               'need to be creative and concise, aiming for 2-3 sentences. I '
+               'am starting to brainstorm interesting concepts. My mind is '
+               'currently focusing on outer space, specifically neutron stars '
+               'and black holes. This is the starting point for my creative '
+               'process.\n'
+               '\n'
+               '\n',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning']
+{ 'extras': { 'signature': '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'},
+  'index': 1,
+  'text': 'When an octopus falls asleep, its skin ripples with shifting colors '
+          'and textures, painting a visible, living canvas of its dreams. It '
+          "is as though the creature's subconscious mind is broadcasting a "
+          'silent, underwater movie, allowing the dark ocean to watch exactly '
+          'what it imagines.',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'index', 'extras']
+Block types in response: ['reasoning', 'text']
+
+==================================================
+Testing: OpenAI GPT-5.4
+==================================================
+{ 'id': 'rs_034fc2a655306db00069cc0bd4ec94819588b7f0df9ca64103',
+  'index': 'lc_rs_305f30',
+  'reasoning': '**Generating creative expression**\n'
+               '\n'
+               "I see the user's prompt is asking for something interesting, "
+               'and I think a creative take might be poetic or insightful. So, '
+               'I’ll brainstorm to come up with a captivating couple of '
+               'sentences. Let’s try to craft something that sparks curiosity '
+               "and wonder, ensuring it's concise and meaningful. I'll aim for "
+               'an engaging expression that resonates!',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['id', 'type', 'index', 'reasoning']
+{ 'id': 'msg_034fc2a655306db00069cc0bd80a408195b3996a50812375e7',
+  'index': 'lc_txt_1',
+  'phase': 'final_answer',
+  'text': 'The moon doesn’t glow with its own fire; it’s just a patient '
+          'mirror, turning sunlight into something soft enough for our night '
+          'eyes. Maybe that’s a useful trick for people too: sometimes the '
+          'brightest thing we can do is reflect a little warmth in a dark '
+          'world.',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'phase', 'index', 'id']
+Block types in response: ['reasoning', 'text']
+
+==================================================
+Testing: Azure OpenAI GPT-5.4
+==================================================
+{ 'id': 'rs_043bd977a348b2c60069cc0bda42c08193ab3d4b72e2f6e473',
+  'index': 'lc_rs_305f30',
+  'reasoning': 'I want to come up with a creative answer in 2-3 interesting '
+               'sentences. It’s important to keep it concise and engaging, so '
+               'I’ll focus on something imaginative that captures the user’s '
+               'attention without being overly wordy. I could explore '
+               'whimsical ideas or provoke thought with a clever twist. Let’s '
+               'see how I can express that in an intriguing way!',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['id', 'type', 'index', 'reasoning']
+{ 'id': 'msg_043bd977a348b2c60069cc0bdb68cc8193be33d9757e2f9fbf',
+  'index': 'lc_txt_1',
+  'phase': 'final_answer',
+  'text': 'Somewhere in the universe, a star is still shining its last light '
+          'into a darkness that won’t notice it for millions of years. That '
+          'means even endings can be delayed gifts—proof that what we’ve been '
+          'is never lost all at once, just slowly delivered to the future.',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'phase', 'index', 'id']
+Block types in response: ['reasoning', 'text']
+
+==================================================
+Testing: Vertex Gemini 3.1 Pro
+==================================================
+{ 'reasoning': '**Defining the Core Task**\n'
+               '\n'
+               "I'm focused on grasping the essence of the request. Currently, "
+               'I\'m parsing the "think of something interesting" part, '
+               'specifically how to balance creativity with the strict '
+               'sentence count. The constraints are proving to be the real '
+               'challenge.\n'
+               '\n'
+               '\n'
+               '**Formulating the Narrative**\n'
+               '\n'
+               "I'm now iterating on the sentence drafts. The initial draft is "
+               "a bit long, so I'm honing the language to meet the criteria. "
+               'Trying to make it punchier and more impactful while keeping '
+               'the core concept. Simplifying the "fading Polaroid" analogy is '
+               'key.\n'
+               '\n'
+               '\n'
+               '**Polishing the Prose**\n'
+               '\n'
+               "I'm feeling good about the core idea. Now, I'm focusing on the "
+               'rhythm and flow of the sentences. Replacing a few key words to '
+               'make it pop even more. I want to ensure the imagery is vivid '
+               'and accessible, while still retaining the philosophical '
+               'weight. Refining the metaphor to solidify the overall impact '
+               'is my primary goal.\n'
+               '\n'
+               '\n',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning']
+{ 'extras': { 'signature': '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'},
+  'index': 1,
+  'text': "Every time you recall a cherished memory, your mind isn't "
+          'retrieving the original event, but rather the very last time you '
+          'remembered it. Like a fading Polaroid repeatedly photocopied, the '
+          'details subtly morph and repaint themselves with each nostalgic '
+          'glance. We are all unwitting architects of our own pasts, '
+          'constantly rewriting our personal histories without ever lifting a '
+          'pen.',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'index', 'extras']
+Block types in response: ['reasoning', 'text']
+
+==================================================
+Testing: Vertex Claude Sonnet 4.6
+==================================================
+{ 'type': 'non_standard',
+  'value': { 'index': 0,
+             'signature': 'Ev8BCl0IDBACGAIqQPydWy9yhox0O0iSgOIUWXgP1s5juHnipqqG8loTqhgciNMxMryIgdi4Qr2k+HySz8fIEgbjm9eAW1Q0V6IUuIoyEWNsYXVkZS1zb25uZXQtNC02OAASDPHZ96aGpt8yH4UrIhoMxeB+rusljUyu0DkOIjADoSF9JSLdkaTyO7+hPbFedams+SKNcCNzugQJk4FY1GLstzsYc//GY2t1rTp82mYqUJtbHIhfO2iH9sCFLzifq3m2ya+dA3WMRywUalpRuOOG7hqSPm+/lRuh9mzUfcHrfhOa1sYvpYAe7O8EJWPhC5Pd3hUFIzCmdvn3qVR+brLdGAE=',
+             'thinking': 'Let me think of something interesting and express it '
+                         'creatively.',
+             'type': 'thinking'}}
+  type: non_standard, keys: ['type', 'value']
+{ 'index': 1,
+  'text': "Here's what I came up with:\n"
+          '\n'
+          "**Every ocean wave you've ever seen has traveled thousands of miles "
+          'just to die at your feet.**\n'
+          '\n'
+          "The water itself barely moves — it's the *energy* that makes the "
+          'long journey, passing invisibly through molecule after molecule '
+          "like a secret whispered across a crowd. In a way, the ocean isn't "
+          "sending you water; it's sending you a message.",
+  'type': 'text'}
+  type: text, keys: ['text', 'type', 'index']
+Block types in response: ['thinking', 'text']
