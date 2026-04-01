@@ -1,0 +1,8 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "swe_aget": "./agentic_pattern/subagent_pattern/graph.py:graph"
+  },
+  "env": "./.env",
+  "python": "3.12"
+}
