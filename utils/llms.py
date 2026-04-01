@@ -1,5 +1,6 @@
 """All llms providers utils with langchain."""
 
+from enum import StrEnum
 from pprint import pprint
 from typing import Any
 
@@ -40,6 +41,27 @@ vertex_claude_sonnet_4_6 = ChatAnthropicVertex(
 )
 
 
+class Model(StrEnum):
+    """Avaialble models for testing."""
+
+    CLAUDE = "claude"
+    GEMINI = "gemini"
+    GPT = "gpt"
+    AZURE_GPT = "azure-gpt"
+    VERTEX_GEMINI = "vertex-gemini"
+    VERTEX_CLAUDE = "vertex-claude"
+
+
+MODELS: dict[Model, BaseChatModel] = {
+    Model.CLAUDE: anthropic_claude_sonnet_4_6,
+    Model.GEMINI: gemini_3_1_pro,
+    Model.GPT: openai_gpt_5_4,
+    Model.AZURE_GPT: azure_openai_gpt_5_4,
+    Model.VERTEX_GEMINI: vertex_gemini_3_1_pro,
+    Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
+}
+
+
 def test_llm(name: str, llm: BaseChatModel) -> None:
     """Send a simple test message to an LLM and print the response."""
     print(f"\n{'=' * 50}")
@@ -73,14 +95,5 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
 
 # use uv run python -m utils.llms > utils/response_blocks.txt
 if __name__ == "__main__":
-    models = {
-        "Anthropic Claude Sonnet 4.6": anthropic_claude_sonnet_4_6,
-        "Gemini 3.1 Pro": gemini_3_1_pro,
-        "OpenAI GPT-5.4": openai_gpt_5_4,
-        "Azure OpenAI GPT-5.4": azure_openai_gpt_5_4,
-        "Vertex Gemini 3.1 Pro": vertex_gemini_3_1_pro,
-        "Vertex Claude Sonnet 4.6": vertex_claude_sonnet_4_6,
-    }
-
-    for name, llm in models.items():
+    for name, llm in MODELS.items():
         test_llm(name, llm)

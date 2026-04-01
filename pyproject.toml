@@ -31,6 +31,10 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 explicit_package_bases = true
 
+[[tool.mypy.overrides]]
+module = "opentelemetry.*"
+follow_imports = "skip"
+
 
 [tool.ruff]
 line-length = 120

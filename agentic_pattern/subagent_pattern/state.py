@@ -21,3 +21,4 @@ class ContextSchema:
     """
 
     agent_name: str
+    model: str

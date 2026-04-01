@@ -4,13 +4,14 @@ from langgraph.prebuilt import ToolNode
 from langgraph.runtime import Runtime
 
 from agentic_pattern.subagent_pattern.state import AgentState
+from agentic_pattern.subagent_pattern.tools import create_file, update_todos
 
 # TODO 2: Create the tool node
-tool_node = ToolNode(tools=[])
+tool_node = ToolNode(tools=[create_file, update_todos])
 
 
 # TODO 3: Define the LLM node
-def llm_node(state: AgentState, runtime: Runtime) -> dict:  # type: ignore[type-arg]
+def agent_node(state: AgentState, runtime: Runtime) -> dict:  # type: ignore[type-arg]
     """Call the LLM with tools and subagents bound."""
     # Bind tools to LLM
     # Invoke LLM with state messages
