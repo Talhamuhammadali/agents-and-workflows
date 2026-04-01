@@ -8,6 +8,7 @@ ANTHROPIC_CLAUDE_SONNET_4_6: dict[str, Any] = {
     "temperature": 1,
     "max_tokens": 64000,
     "model_kwargs": {"thinking": {"type": "enabled", "budget_tokens": 10000}},
+    "cache_control": {"type": "ephemeral"},
 }
 
 GEMINI_3_1_PRO: dict[str, Any] = {
@@ -50,4 +51,5 @@ VERTEX_CLAUDE_SONNET_4_6: dict[str, Any] = {
     "temperature": 1,
     "max_tokens": 64000,
     "model_kwargs": {"thinking": {"type": "enabled", "budget_tokens": 10000}},
+    "cache_control": {"type": "ephemeral"},
 }

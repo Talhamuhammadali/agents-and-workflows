@@ -1,6 +1,6 @@
 """Graph definition for the subagent pattern."""
 
-from langgraph.graph import START, StateGraph
+from langgraph.graph import START, StateGraph, END
 
 # TODO 1: Import nodes and router from nodes.py
 from agentic_pattern.subagent_pattern.nodes import (
@@ -9,28 +9,29 @@ from agentic_pattern.subagent_pattern.nodes import (
     subagent_node,
     tool_node,
 )
-from agentic_pattern.subagent_pattern.state import AgentState
+from agentic_pattern.subagent_pattern.state import AgentState, ContextSchema
 
-# Build the graph
-graph_builder = StateGraph(AgentState)
+# Build the harness
+Agent_Builder = StateGraph(AgentState, context_schema=ContextSchema)
 
 # Add nodes
-graph_builder.add_node("agent", agent_node)
-graph_builder.add_node("tools", tool_node)
-graph_builder.add_node("subagents", subagent_node)
+Agent_Builder.add_node("agent", agent_node)
+Agent_Builder.add_node("tools", tool_node)
+Agent_Builder.add_node("subagents", subagent_node)
 
 # Add edges
-graph_builder.add_edge(START, "agent")
-graph_builder.add_conditional_edges(
+Agent_Builder.add_edge(START, "agent")
+Agent_Builder.add_conditional_edges(
     "agent",
     route_llm_output,
     {
         "tools": "tools",
         "subagents": "subagents",
+        "turn_end": END,
     },
 )
-graph_builder.add_edge("tools", "agent")  # tools -> back to agent
-graph_builder.add_edge("subagents", "agent")  # subagents -> back to agent
+Agent_Builder.add_edge("tools", "agent")  # tools -> back to agent
+Agent_Builder.add_edge("subagents", "agent")  # subagents -> back to agent
 
 # Compile
-graph = graph_builder.compile()
+graph = Agent_Builder.compile()

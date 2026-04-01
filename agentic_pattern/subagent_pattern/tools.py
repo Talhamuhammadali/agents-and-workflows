@@ -25,7 +25,7 @@ def create_file(file_name: str, content: str, tool_runtime: ToolRuntime[ContextS
         update={
             "messages": [
                 ToolMessage(
-                    content=f"File '{file_name}' created with content: {content}",
+                    content=f"File '{file_name}' created successfully.",
                     tool_call_id=tool_runtime.tool_call_id,
                 )
             ]
@@ -47,3 +47,6 @@ def update_todos(todos: list[dict], tool_runtime: ToolRuntime[ContextSchema, Age
             ],
         }
     )
+
+
+TOOLS = [create_file, update_todos]

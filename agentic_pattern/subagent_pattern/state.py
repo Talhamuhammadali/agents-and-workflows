@@ -1,6 +1,10 @@
 """State definition for the subagent pattern graph."""
 
+from dataclasses import dataclass
+
 from langgraph.graph import MessagesState
+
+from utils import Model
 
 
 class AgentState(MessagesState):
@@ -14,6 +18,7 @@ class AgentState(MessagesState):
     todos: list[dict]
 
 
+@dataclass
 class ContextSchema:
     """Context schema for the subagent pattern graph.
 
@@ -21,4 +26,5 @@ class ContextSchema:
     """
 
     agent_name: str
-    model: str
+    model: Model
+    subagents: list[str]
