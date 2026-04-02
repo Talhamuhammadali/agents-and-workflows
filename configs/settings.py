@@ -51,5 +51,5 @@ VERTEX_CLAUDE_SONNET_4_6: dict[str, Any] = {
     "temperature": 1,
     "max_tokens": 64000,
     "model_kwargs": {"thinking": {"type": "enabled", "budget_tokens": 10000}},
-    "cache_control": {"type": "ephemeral"},
+    # "cache_control": {"type": "ephemeral"}, # Vertex AI does not support cache control settings
 }

@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from agentic_pattern.subagent_pattern.graph import Agent_Builder
 from agentic_pattern.subagent_pattern.state import ContextSchema
 from utils import MODELS, Model
@@ -21,19 +19,42 @@ def test_graph_with_model(model: Model) -> None:
     context = ContextSchema(agent_name="essay-writer", model=model, subagents=[])
     agent = Agent_Builder.compile(checkpointer=InMemorySaver(), store=InMemoryStore())
     try:
-        all_chunks = []
+        messages = []
+        current_message = None
+        current_id = None
         for chunk in agent.stream(
             {"message": PROMPT},
             config={"thread_id": f"essay-by-{model.value}"},
             context=context,
-            stream_mode=["custom"],
+            stream_mode=["custom", "messages"],
             version="v2",
         ):
-            if chunk.get("type") == "custom":
-                data = chunk.get("data")
-                all_chunks.append(data)
-                pprint(data.model_dump(), indent=2)
-                
+            # if chunk.get("type") == "custom":
+            #     data = chunk.get("data")
+            #     chunk_id = data.id
+            #     if chunk_id != current_id:
+            #         if current_message is not None:
+            #             print(f"\n{'─' * 40} end of {current_id}\n")
+            #             messages.append(current_message)
+            #         current_id = chunk_id
+            #         current_message = data
+            #         print(f"{'─' * 40} new message: {chunk_id}")
+            #     else:
+            #         current_message += data
+            
+            if chunk.get("type") == "messages":
+                print(f"\n{'─' * 40} new message chunk\n")
+                print(f"Chunk content: {type(chunk.get('data'))}")      
+                print(f"Chunk content: {len(chunk.get('data'))}")      
+                print(f"Chunk content: {chunk.get('data')[1]}")      
+        if current_message is not None:
+            messages.append(current_message)
+
+        print(f"\n{'=' * 40}")
+        print(f"Total messages: {len(messages)}")
+        for msg_id, msg in enumerate(messages):
+            print(f"\n  [{msg_id}] tool_calls: {[tc['name'] for tc in msg.tool_calls] if msg.tool_calls else 'none'}")
+
     except Exception as e:
         print(f"  Error: {e}")
 

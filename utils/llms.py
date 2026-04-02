@@ -55,10 +55,10 @@ class Model(StrEnum):
 MODELS: dict[Model, BaseChatModel] = {
     # Model.CLAUDE: anthropic_claude_sonnet_4_6,
     # Model.GEMINI: gemini_3_1_pro,
-    Model.GPT: openai_gpt_5_4,
+    # Model.GPT: openai_gpt_5_4,
     # Model.AZURE_GPT: azure_openai_gpt_5_4,
     # Model.VERTEX_GEMINI: vertex_gemini_3_1_pro,
-    # Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
+    Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
 }
 
 
