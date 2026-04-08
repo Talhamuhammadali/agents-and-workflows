@@ -1,6 +1,6 @@
 """Graph definition for the subagent pattern."""
 
-from langgraph.graph import START, StateGraph, END
+from langgraph.graph import END, START, StateGraph
 
 # TODO 1: Import nodes and router from nodes.py
 from agentic_pattern.subagent_pattern.nodes import (

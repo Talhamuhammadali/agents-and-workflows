@@ -34,8 +34,12 @@ check_untyped_defs = true
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = "opentelemetry.*"
+module = ["opentelemetry.*", "aiofiles.*"]
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
 
 
 [tool.ruff]

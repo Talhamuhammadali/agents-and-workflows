@@ -26,21 +26,18 @@ def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMe
     # TODO: Add prompt compaction explore trim_messages and related utilities in langchain
     if messages and isinstance(messages[-1], ToolMessage):
         return messages  # Don't add user message if last message is a tool call response still agents turn
-    
+
     user_message = HumanMessage(content=message)
     messages = messages or []
     messages.append(user_message)
     return messages
 
+
 def handle_message(
-    message: AIMessage | AIMessageChunk | HumanMessage,
-    internal: bool = False,
-    agent_name: str | None = None
+    message: AIMessage | AIMessageChunk | HumanMessage, internal: bool = False, agent_name: str | None = None
 ) -> BaseMessage:
     """Handle incoming messages from the LLM stream."""
-    additional_kwargs = {
-        "internal": internal
-    }
+    additional_kwargs = {"internal": internal}
     message.name = agent_name
     message.additional_kwargs = {**message.additional_kwargs, **additional_kwargs}
     return message
@@ -54,16 +51,18 @@ def agent_node(state: AgentState, runtime: Runtime[ContextSchema]) -> dict:  # t
         messages: list[BaseMessage] = list(state.get("messages", []))
         messages = pre_llm_processing(message, messages)
         system_message = SystemMessage(content=MAIN_AGENT_SYSTEM_PROMPT)
-        
+
         print(f"[agent_node] Sending to LLM with context: {runtime.context}")
-        llm = MODELS[runtime.context.model]  # type: ignore[index]
-        llm = llm.bind_tools(TOOLS)
+        base_llm = MODELS[runtime.context.model]  # type: ignore[index]
+        llm = base_llm.bind_tools(TOOLS)
         ai_message: AIMessageChunk | None = None
-        
+
         for chunk in llm.stream([system_message, *messages]):
-            ai_message = chunk if ai_message is None else ai_message + chunk
+            if not isinstance(chunk, AIMessageChunk):
+                continue
+            ai_message = chunk if ai_message is None else ai_message + chunk  # type: ignore[assignment]
             runtime.stream_writer(handle_message(chunk, agent_name=runtime.context.agent_name))
-        
+
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
             messages.append(enriched_message)
@@ -91,12 +90,10 @@ def route_llm_output(state: AgentState, runtime: Runtime[ContextSchema]) -> str:
         "subagents" - if LLM wants to delegate to a subagent
         "__end__" - if LLM is done (final text response)
     """
-    last_message = state.get("messages", [])[-1]  
+    last_message = state.get("messages", [])[-1]
     # if last_message.tool_calls and any(call.get("tool_name") == "subagent" for call in last_message.tool_calls):
     #     return "subagents"
-    if last_message.tool_calls:
+    if isinstance(last_message, AIMessage) and last_message.tool_calls:
         print(f"Tool calls detected: {[call.get('name') for call in last_message.tool_calls]}")
         return "tools"
     return "turn_end"
-    
-    raise NotImplementedError
