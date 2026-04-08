@@ -170,3 +170,74 @@ class TestEdit:
         """Blocks editing files outside workspace."""
         with pytest.raises(PermissionError):
             await fs.edit("../../etc/passwd", "root", "hacked")
+
+
+class TestGlob:
+    """Tests for glob method."""
+
+    @pytest.mark.asyncio
+    async def test_glob_txt_files(self, fs):
+        """Finds .txt files in workspace."""
+        results = await fs.glob("*.txt")
+        assert "hello.txt" in results
+
+    @pytest.mark.asyncio
+    async def test_glob_recursive(self, fs):
+        """Finds files recursively with ** pattern."""
+        results = await fs.glob("**/*.txt")
+        assert "hello.txt" in results
+        assert "subdir/nested.txt" in results
+
+    @pytest.mark.asyncio
+    async def test_glob_scoped_to_subdir(self, fs):
+        """Scopes search to a subdirectory."""
+        results = await fs.glob("*.txt", path="subdir")
+        assert "subdir/nested.txt" in results
+        assert "hello.txt" not in results
+
+    @pytest.mark.asyncio
+    async def test_glob_no_matches(self, fs):
+        """Returns empty list when no files match."""
+        results = await fs.glob("*.xyz")
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_glob_limit(self, fs, workspace):
+        """Respects the result limit."""
+        for i in range(5):
+            (workspace / f"file{i}.md").write_text(f"content {i}")
+        results = await fs.glob("*.md", limit=3)
+        assert len(results) == 3
+
+    @pytest.mark.asyncio
+    async def test_glob_sorted_by_mtime(self, fs, workspace):
+        """Returns results sorted by modification time, newest first."""
+        import time
+
+        (workspace / "old.md").write_text("old")
+        time.sleep(0.05)
+        (workspace / "new.md").write_text("new")
+        results = await fs.glob("*.md")
+        assert results[0] == "new.md"
+        assert results[1] == "old.md"
+
+    @pytest.mark.asyncio
+    async def test_glob_filters_symlinks_outside(self, fs, workspace):
+        """Filters out symlinks pointing outside workspace."""
+        outside = workspace.parent / "outside_file.txt"
+        outside.write_text("external")
+        (workspace / "link.txt").symlink_to(outside)
+        results = await fs.glob("*.txt")
+        assert "link.txt" not in results
+
+    @pytest.mark.asyncio
+    async def test_glob_nonexistent_dir(self, fs):
+        """Raises FileNotFoundError for missing directory."""
+        with pytest.raises(FileNotFoundError, match="Directory not found"):
+            await fs.glob("*.txt", path="nope")
+
+    @pytest.mark.asyncio
+    async def test_glob_traversal_blocked(self, fs):
+        """Blocks glob in directories outside workspace."""
+        with pytest.raises(PermissionError):
+            await fs.glob("*.txt", path="../../etc")

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import aiofiles
@@ -71,3 +72,21 @@ class FileSystem:
             await f.write(updated)
 
         return str(file_path)
+
+    async def glob(self, pattern: str, path: str = ".", limit: int = 200) -> list[str]:
+        """Find files matching a glob pattern, sorted by modification time."""
+        search_dir = self._safe_path(path)
+        if not search_dir.is_dir():
+            raise FileNotFoundError(f"Directory not found: {path}")
+
+        matches = []
+        for match in search_dir.glob(pattern):
+            resolved = match.resolve()
+            if not resolved.is_relative_to(self.workspace):
+                continue
+            if resolved.is_file():
+                matches.append(resolved)
+
+        matches.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+
+        return [str(m.relative_to(self.workspace)) for m in matches[:limit]]
