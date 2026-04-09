@@ -53,11 +53,11 @@ class Model(StrEnum):
 
 
 MODELS: dict[Model, BaseChatModel] = {
-    # Model.CLAUDE: anthropic_claude_sonnet_4_6,
-    # Model.GEMINI: gemini_3_1_pro,
-    # Model.GPT: openai_gpt_5_4,
-    # Model.AZURE_GPT: azure_openai_gpt_5_4,
-    # Model.VERTEX_GEMINI: vertex_gemini_3_1_pro,
+    Model.CLAUDE: anthropic_claude_sonnet_4_6,
+    Model.GEMINI: gemini_3_1_pro,
+    Model.GPT: openai_gpt_5_4,
+    Model.AZURE_GPT: azure_openai_gpt_5_4,
+    Model.VERTEX_GEMINI: vertex_gemini_3_1_pro,
     Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
 }
 
@@ -87,8 +87,8 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
             else:
                 block_type = block_dict.get("type")
             block_types.append(block_type)
-
         print(f"Block types in response: {block_types}")
+        print(f"Full response usage metadata: {ai_message.usage_metadata}")
     except Exception as e:
         print(f"Error: {e}")
 
