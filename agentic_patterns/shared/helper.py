@@ -13,6 +13,8 @@ def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMe
     # TODO: Add prompt compaction explore trim_messages and related utilities in langchain
     if messages and isinstance(messages[-1], ToolMessage):
         return messages  # Don't add user message if last message is a tool call response still agents turn
+    if messages and isinstance(messages[-1], HumanMessage):
+        return messages  # Don't add user message if last message is a human message injected by langgraph.
 
     user_message = HumanMessage(content=message)
     messages = messages or []

@@ -50,6 +50,7 @@ class Model(StrEnum):
 
     CLAUDE = "claude"
     GEMINI_2_5 = "gemini-2.5"
+    GEMINI = "gemini"
     GPT = "gpt"
     AZURE_GPT = "azure-gpt"
     VERTEX_GEMINI = "vertex-gemini"
@@ -59,6 +60,7 @@ class Model(StrEnum):
 
 MODELS: dict[Model, BaseChatModel] = {
     Model.CLAUDE: anthropic_claude_sonnet_4_6,
+    Model.GEMINI: gemini_3_1_pro,
     Model.GEMINI_2_5: gemini_2_5_pro,
     Model.GPT: openai_gpt_5_4,
     Model.AZURE_GPT: azure_openai_gpt_5_4,

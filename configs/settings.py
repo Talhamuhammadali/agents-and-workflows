@@ -21,6 +21,7 @@ GEMINI_2_5_PRO: dict[str, Any] = {
     "model": "gemini-2.5-pro",
     "temperature": 0.7,
     "include_thoughts": True,
+    "thinking_budget": 2056,
     "streaming": True,
 }
 
@@ -46,6 +47,7 @@ VERTEX_GEMINI_2_5_PRO: dict[str, Any] = {
     "model": "gemini-2.5-pro",
     "temperature": 0.7,
     "include_thoughts": True,
+    "thinking_budget": 2056,
     "streaming": True,
     "vertexai": True,
     "project": "ekai-dev",

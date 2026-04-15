@@ -3,9 +3,9 @@ from langchain_core.messages import ToolMessage
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
+from agentic_patterns.shared.todos import update_todos
 from agentic_patterns.subagent_pattern.prompts import (
     CREATE_FILE_DESCRIPTION,
-    UPDATE_TODOS_DESCRIPTION,
 )
 from agentic_patterns.subagent_pattern.state import AgentState, ContextSchema
 
@@ -29,22 +29,6 @@ def create_file(file_name: str, content: str, tool_runtime: ToolRuntime[ContextS
                     tool_call_id=tool_runtime.tool_call_id,
                 )
             ]
-        }
-    )
-
-
-@tool(name_or_callable="update_todos", description=UPDATE_TODOS_DESCRIPTION)
-def update_todos(todos: list[dict], tool_runtime: ToolRuntime[ContextSchema, AgentState]) -> Command:
-    """Replaces state.todos with the provided list. Each todo: {id, task, completed}."""
-    return Command(
-        update={
-            "todos": todos,
-            "messages": [
-                ToolMessage(
-                    content=f"Todos updated. {len(todos)} item(s) in list.",
-                    tool_call_id=tool_runtime.tool_call_id,
-                )
-            ],
         }
     )
 
