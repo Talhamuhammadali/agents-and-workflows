@@ -17,6 +17,12 @@ GEMINI_3_1_PRO: dict[str, Any] = {
     "include_thoughts": True,
     "streaming": True,
 }
+GEMINI_2_5_PRO: dict[str, Any] = {
+    "model": "gemini-2.5-pro",
+    "temperature": 0.7,
+    "include_thoughts": True,
+    "streaming": True,
+}
 
 OPENAI_GPT_5_4: dict[str, Any] = {
     "model": "gpt-5.4-mini",
@@ -31,6 +37,16 @@ VERTEX_GEMINI_3_1_PRO: dict[str, Any] = {
     "temperature": 0.7,
     "thinking_level": "low",
     "include_thoughts": True,
+    "vertexai": True,
+    "project": "ekai-dev",
+    "location": "global",
+}
+
+VERTEX_GEMINI_2_5_PRO: dict[str, Any] = {
+    "model": "gemini-2.5-pro",
+    "temperature": 0.7,
+    "include_thoughts": True,
+    "streaming": True,
     "vertexai": True,
     "project": "ekai-dev",
     "location": "global",

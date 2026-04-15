@@ -14,9 +14,11 @@ from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from configs.settings import (
     ANTHROPIC_CLAUDE_SONNET_4_6,
     AZURE_OPENAI_GPT_5_4,
+    GEMINI_2_5_PRO,
     GEMINI_3_1_PRO,
     OPENAI_GPT_5_4,
     VERTEX_CLAUDE_SONNET_4_6,
+    VERTEX_GEMINI_2_5_PRO,
     VERTEX_GEMINI_3_1_PRO,
 )
 
@@ -25,6 +27,7 @@ load_dotenv()
 anthropic_claude_sonnet_4_6 = ChatAnthropic(**ANTHROPIC_CLAUDE_SONNET_4_6)
 
 gemini_3_1_pro = ChatGoogleGenerativeAI(**GEMINI_3_1_PRO)
+gemini_2_5_pro = ChatGoogleGenerativeAI(**GEMINI_2_5_PRO)
 
 openai_gpt_5_4 = ChatOpenAI(**OPENAI_GPT_5_4)
 
@@ -33,6 +36,7 @@ azure_openai_gpt_5_4 = AzureChatOpenAI(**AZURE_OPENAI_GPT_5_4)
 
 # Enterprise (Vertex AI) models
 vertex_gemini_3_1_pro = ChatGoogleGenerativeAI(**VERTEX_GEMINI_3_1_PRO)
+vertex_gemini_2_5_pro = ChatGoogleGenerativeAI(**VERTEX_GEMINI_2_5_PRO)
 
 vertex_claude_sonnet_4_6 = ChatAnthropicVertex(
     **VERTEX_CLAUDE_SONNET_4_6,
@@ -45,19 +49,21 @@ class Model(StrEnum):
     """Avaialble models for testing."""
 
     CLAUDE = "claude"
-    GEMINI = "gemini"
+    GEMINI_2_5 = "gemini-2.5"
     GPT = "gpt"
     AZURE_GPT = "azure-gpt"
     VERTEX_GEMINI = "vertex-gemini"
+    VERTEX_GEMINI_2_5 = "vertex-gemini-2.5"
     VERTEX_CLAUDE = "vertex-claude"
 
 
 MODELS: dict[Model, BaseChatModel] = {
     Model.CLAUDE: anthropic_claude_sonnet_4_6,
-    Model.GEMINI: gemini_3_1_pro,
+    Model.GEMINI_2_5: gemini_2_5_pro,
     Model.GPT: openai_gpt_5_4,
     Model.AZURE_GPT: azure_openai_gpt_5_4,
     Model.VERTEX_GEMINI: vertex_gemini_3_1_pro,
+    Model.VERTEX_GEMINI_2_5: vertex_gemini_2_5_pro,
     Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
 }
 
@@ -69,7 +75,7 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
     print(f"{'=' * 50}")
     try:
         ai_message = None
-        for chunk in llm.stream("Think of something interesting to say. then say it in creative 2-3 sentences"):
+        for chunk in llm.stream("Think ultra of something interesting to say. then say it in creative 2-3 sentences"):
             # pprint(chunk, indent=2)
             ai_message = chunk if ai_message is None else ai_message + chunk
 

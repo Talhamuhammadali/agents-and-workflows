@@ -2,173 +2,191 @@
 ==================================================
 Testing: claude
 ==================================================
-{ 'text': "Here's what came to mind:\n"
+{ 'text': "Here's what I landed on:\n"
           '\n'
-          "**The ocean is essentially Earth's memory.**\n"
+          "**The idea that you've never actually seen your own face.**\n"
           '\n'
-          'Every drop of seawater has cycled through ancient storms, dinosaur '
-          'bloodstreams, and the tears of people long forgotten. When you swim '
-          "in the sea, you're not just touching water — you're touching "
-          'everything that ever lived.',
+          'Only reflections and photographs — distorted, flipped, or frozen '
+          "versions curated by light and glass. Every single person you've "
+          'ever met knows what you look like *better than you do.*',
   'type': 'text'}
   type: text, keys: ['type', 'text']
 Block types in response: ['text']
-Full response usage metadata: {'input_tokens': 25, 'output_tokens': 70, 'total_tokens': 95, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
+Full response usage metadata: {'input_tokens': 26, 'output_tokens': 65, 'total_tokens': 91, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
 
 ==================================================
 Testing: gemini
 ==================================================
-{ 'reasoning': '**Initiating Conceptual Exploration**\n'
+{ 'reasoning': '**Considering the Prompt**\n'
                '\n'
-               "I'm currently engaged in analyzing the request. My initial "
-               'goal is to come up with something interesting and creative to '
-               "say within a concise 2-3 sentence limit. I've begun "
-               'brainstorming on the concept of "Space" as a potential area '
-               'for exploration.\n'
+               "I'm currently dissecting the prompt, focusing on its core "
+               'components. My primary task is to generate something "ultra" '
+               "interesting within a tight sentence constraint. I'm actively "
+               'evaluating potential interpretations of "ultra" and how to '
+               'achieve the desired creative output.\n'
                '\n'
                '\n'
-               '**Refining Initial Concepts**\n'
+               '**Developing Interesting Concepts**\n'
                '\n'
-               'I\'ve decided to move forward with the "wood wide web" idea, '
-               "and I've focused my attention on polishing my initial draft. "
-               "I'm focusing on the rhythm and imagery, specifically how to "
-               "convey the wonder and strangeness of mycelial networks. I'm "
-               'trying to ensure my sentences are as striking and concise as '
-               'possible, while still accurate.\n'
+               "I've been brainstorming concepts. I've considered cosmology, "
+               'biology, and nature, but have chosen to focus on the concept '
+               "of light and time. I'm focusing on the idea that when we look "
+               "at the stars, we're peering deep into the past. I think that "
+               "is the most interesting starting point. I'm working on framing "
+               'this concept into just a few sentences.\n'
                '\n'
                '\n',
   'type': 'reasoning'}
   type: reasoning, keys: ['type', 'reasoning']
-{ 'extras': { 'signature': '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'},
+{ 'extras': { 'signature': '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'},
   'index': 1,
-  'text': 'Beneath every tranquil forest floor lies a sprawling, invisible '
-          'brain made of fungal threads, silently connecting the roots of '
-          'ancient trees. Through this living subterranean web, the forest '
-          'actually communicates, sharing nutrients with struggling saplings '
-          'and whispering chemical warnings of approaching drought or disease. '
-          'We wander among the quiet trunks thinking we are just observers, '
-          'entirely unaware of the billion-lane biological highway pulsing '
-          'with life just beneath our boots.',
+  'text': 'Every time you look up at the night sky, you are essentially a time '
+          'traveler witnessing the glowing ghosts of stars that may have '
+          'burned out eons ago. We are forged from the exact same recycled ash '
+          'of those ancient cosmic explosions, temporarily stitched together '
+          'by gravity and conscious thought. Therefore, you are not merely a '
+          'tiny life existing within a cold void, but rather the universe '
+          'itself briefly waking up to admire its own breathtaking reflection.',
   'type': 'text'}
   type: text, keys: ['type', 'text', 'index', 'extras']
 Block types in response: ['reasoning', 'text']
-Full response usage metadata: {'input_tokens': 18, 'output_tokens': 509, 'total_tokens': 527, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 428}}
+Full response usage metadata: {'input_tokens': 19, 'output_tokens': 632, 'total_tokens': 651, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 547}}
 
 ==================================================
 Testing: gpt
 ==================================================
-{ 'id': 'rs_0204d75256030eaf0069d765915f2481938fc38590abd669e1',
+{ 'id': 'rs_09cb4afb16334e650069d766505b8c8190a39e32467c6fb439',
   'index': 'lc_rs_305f30',
-  'reasoning': '**Crafting an original thought**\n'
+  'reasoning': '**Crafting creative statements**\n'
                '\n'
-               "I’m aiming for a creative answer that's engaging and original. "
-               'I think it should be general but vivid enough to capture '
-               "attention. So, I'll make sure to express an idea in a couple "
-               'of interesting sentences, bringing some flair without needing '
-               "to ask for guidance. Let's get started on this fun little "
-               'creative journey!',
+               "I'm interpreting the request as wanting a creative and "
+               'interesting short statement in 2-3 sentences. "Ultra" seems to '
+               "imply thinking deeply or being very imaginative. I'll aim to "
+               'provide a polished mini-thought without any extra '
+               'explanations. Let’s piece together something that captures '
+               'that creative essence while keeping it concise and engaging! '
+               "I'm excited to see what I can come up with!",
   'type': 'reasoning'}
   type: reasoning, keys: ['id', 'type', 'index', 'reasoning']
-{ 'id': 'msg_0204d75256030eaf0069d7659339988193b5d926ede9b71360',
+{ 'id': 'msg_09cb4afb16334e650069d766524e908190aabd24403e89856e',
   'index': 'lc_txt_1',
   'phase': 'final_answer',
-  'text': 'Every day, the world quietly reheats itself with billions of tiny '
-          'decisions, like a giant invisible oven learning our habits one '
-          'button press at a time. And somewhere in all that noise, a single '
-          'kind word can still travel faster than fear, which is a pretty good '
-          'reminder that small things are not small at all.',
+  'text': 'A star is just a rumor of fire that learned how to travel through '
+          'darkness. If you listen closely, the universe doesn’t feel empty at '
+          'all—it feels like a vast, patient mind waiting for us to become '
+          'curious enough to answer.',
   'type': 'text'}
   type: text, keys: ['type', 'text', 'phase', 'index', 'id']
 Block types in response: ['reasoning', 'text']
-Full response usage metadata: {'input_tokens': 23, 'output_tokens': 101, 'total_tokens': 124, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 32}}
+Full response usage metadata: {'input_tokens': 24, 'output_tokens': 131, 'total_tokens': 155, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 78}}
 
 ==================================================
 Testing: azure-gpt
 ==================================================
-{ 'id': 'rs_014be10d062c800c0069d7659598448193ad4e5eb2470d19c4',
+{ 'id': 'rs_08166c25ae7b93290069d7665464348193a517f047a4550092',
   'index': 'lc_rs_305f30',
   'reasoning': '**Crafting creative sentences**\n'
                '\n'
-               'I see the user is looking for something generic yet creative, '
-               'just around 2-3 sentences. There’s no need to ask for further '
-               'clarification. I want to produce something poetic and '
-               'interesting—something that captures the imagination but stays '
-               'concise. Let’s think of vivid imagery and a touch of whimsy to '
-               'make it engaging! I’ll work on crafting that now.',
+               'The user wants a creative response that captures something '
+               'interesting in just 2-3 sentences, something “ultra” and '
+               'imaginative. I need to think of a vivid idea that’s both '
+               'concise and engaging. It’s all about crafting these original '
+               'thoughts that will really catch their attention! Okay, let’s '
+               'brainstorm and make sure these sentences are captivating and '
+               'unique.',
   'type': 'reasoning'}
   type: reasoning, keys: ['id', 'type', 'index', 'reasoning']
-{ 'id': 'msg_014be10d062c800c0069d7659708388193ac3fc7957ed1b6a0',
+{ 'id': 'msg_08166c25ae7b93290069d76655da2c81939cec8c512358602d',
   'index': 'lc_txt_1',
   'phase': 'final_answer',
-  'text': 'The moon is a borrowed lantern, and every night it hangs over us '
-          'like a quiet promise that even darkness can be made beautiful. If '
-          'the stars are old fires, then maybe hope is just our way of '
-          'carrying a little of that light inside us and refusing to let it go '
-          'out.',
+  'text': 'In the quiet dark, the universe isn’t empty—it’s a vast archive of '
+          'sparks, each star a thought the cosmos kept too long to forget. If '
+          'you listen closely enough, even silence begins to sound like a '
+          'story choosing its next word.',
   'type': 'text'}
   type: text, keys: ['type', 'text', 'phase', 'index', 'id']
 Block types in response: ['reasoning', 'text']
-Full response usage metadata: {'input_tokens': 23, 'output_tokens': 102, 'total_tokens': 125, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 39}}
+Full response usage metadata: {'input_tokens': 24, 'output_tokens': 118, 'total_tokens': 142, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 63}}
 
 ==================================================
 Testing: vertex-gemini
 ==================================================
-{ 'reasoning': '**Initiating Conceptual Analysis**\n'
+{ 'reasoning': '**Conceptualizing Ultra Interesting**\n'
                '\n'
-               "I'm currently breaking down the request: to generate "
-               "interesting thoughts in a concise format. Right now, I'm "
-               'focusing on identifying the core elements of the request, like '
-               "sentence count and desired style (creative). Next, I'll dive "
-               'into the brainstorming phase, focusing on concepts that are '
-               'both engaging and potentially novel.\n'
+               'I\'m focused on the "ultra" aspect – what truly pushes the '
+               "boundaries of interesting. Right now, I'm leaning toward a "
+               'paradox or something that plays with perception. Considering '
+               'how the constraints can amplify the creative impact.\n'
                '\n'
                '\n'
-               '**Refining Creative Ideas**\n'
+               '**Delving Into Cosmic Connections**\n'
                '\n'
-               'I\'ve been working on refining the "wood wide web" concept. '
-               'The initial draft needed more flair, so I sharpened the '
-               'imagery, aiming for a more evocative description. Adding the '
-               'detail about "stolen sunlight" and "root-bound conversations" '
-               "seems to improve the narrative. I've confirmed that the core "
-               'elements of the request, like creativity and conciseness, are '
-               'satisfied.\n'
+               "I've been honing in on the cosmic angle, aiming for a potent "
+               'punch. Refining the "stardust" concept, I\'ve revised a draft '
+               'to sharpen its focus. The goal is to maximize the impact by '
+               'emphasizing the shared origins of everything. The aim is to '
+               'create an ultimate reflection of ourselves and our place in '
+               'the universe.\n'
                '\n'
                '\n',
   'type': 'reasoning'}
   type: reasoning, keys: ['type', 'reasoning']
-{ 'extras': { 'signature': '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'},
-  'index': 1,
-  'text': 'Beneath the forest floor lies a bustling, subterranean internet '
-          'where ancient trees whisper secrets through tangled fungal threads. '
-          'They trade stolen sunlight for deep-earth minerals, quietly warning '
-          'their leafy neighbors of approaching droughts or hungry insects. It '
-          'turns out the stillest woods are actually deafeningly loud, alive '
-          'with a million invisible, root-bound conversations.',
+{ 'index': 1,
+  'text': 'Every atom of iron in your blood and calcium in your bones was '
+          'forged in the blinding furnace of a dying star billions of years '
+          'ago. You are not merely a tiny creature existing inside a vast '
+          'universe; you are the universe itself, temporarily woven into human '
+          'form so it can open its eyes and admire its own infinite beauty.',
   'type': 'text'}
-  type: text, keys: ['type', 'text', 'index', 'extras']
-Block types in response: ['reasoning', 'text']
-Full response usage metadata: {'input_tokens': 17, 'output_tokens': 447, 'total_tokens': 464, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 379}}
+  type: text, keys: ['type', 'text', 'index']
+{ 'reasoning': '**Revising Sentient Fragment**\n'
+               '\n'
+               'My focus has shifted to refining the language further. The '
+               'latest revision aims to amplify the sense of wonder. I tried '
+               'playing with the phrasing, emphasizing the temporary nature of '
+               'our form. Considering how to strengthen the impact of the '
+               'final sentence.\n'
+               '\n'
+               '\n',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning']
+Block types in response: ['reasoning', 'text', 'reasoning']
+Full response usage metadata: {'input_tokens': 18, 'output_tokens': 564, 'total_tokens': 582, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 500}}
 
 ==================================================
 Testing: vertex-claude
 ==================================================
 { 'type': 'non_standard',
   'value': { 'index': 0,
-             'signature': 'Ev8BCl0IDBACGAIqQPydWy9yhox0O0iSgOIUWXgP1s5juHnipqqG8loTqhgciNMxMryIgdi4Qr2k+HySz8fIEgbjm9eAW1Q0V6IUuIoyEWNsYXVkZS1zb25uZXQtNC02OAASDIam5dT+WKJi8Mh/wxoMTOzxnSmv3xg/cqqdIjAfU8s5WtBYEGFNbp/x0zolgkqKzBHyutQtirk+xr2P77yZ9/IdQdIJNu+/sFvH1fgqUFJo8NtldE4TVe2vYN6g8SW6aVvSjJYuciiit4Y7WFuV+9qNBIuk8jjzOaP1oiLn+gKgVlJNexA4tmOBpv2JMtaTUTJfmI/ytHsrSYI87NxoGAE=',
-             'thinking': 'Let me think of something interesting and express it '
-                         'creatively.',
+             'signature': 'EpQFCl0IDBACGAIqQGb55RxVLMTGKNPk1GV1gcTBHCBR1mpGSTacT1+cNVOFw/PxXDQre4wdOTQSZC3xMCctN3emcFr/eKp9zO3IFUsyEWNsYXVkZS1zb25uZXQtNC02OAASDHR0+drlYDevnNDwXxoM43kAGlLsY0qIpkqJIjCXUjI1smtmFXcaYzWsmUCqXwn/Ne2P4FiQuQeH9HZjXdok0PeiCBL7WbioRj0/t+oq5AOE2bPSoh32ur0M2kAWkVlxIIfWM7MZOBCtmDk8f11ecukMIbqy8oSn9GH8U5F8n3LnfN1mfUKfCIVICWwmrx7Ifb5B8GuL6H71oT4ji48F3eCWeen5eVQpSOaZE3geCNr1i+nGtD01tgeyQl0wEH49Jy0x8iZbnXZ6/u8U9n7WnqEB5XqcmYVflkHYOzGWiLlO2P8afDEfe/oOu4FVMncxlit0js3A2rs2jMW5JZv9InYELaNMDT3MGqA0tHJgAKUgMq4dJ+eS/DOepNT1bJpZHlti8VUE5DPnBdglMp0HL/5hx1QWPnteqmbog8eYvu2CivV9SYnFfmgVk4kfhbhHe7c+U8rnqBSjfaGvyJlQseOFUeVnWEzeYHHU0D3RDqbfGD+xBq52AsBDhyQLGAHTsVB1qDLEhIvYCuUlE7qf6hmn97xOm0N+fkZksDtaKcgJpgMZj0mtLa4o0kC5oHPyYy6P/n18/iV8AQBjuhpQVc14QsVXpVAdPQIMe2IF2uXhVnfEaUpy4Sdi9W9i824qeQUXI2Hb3swd1wPJMasELLt1SOqWAsmtHNIlH6oZHdG5pHGLHseD1BowyAoNNsdwg97G6lOATKreXT8z5PzgM9KOcT1RGrXExsY05zZoNxaZ7Sd7GAE=',
+             'thinking': 'Let me think of something genuinely interesting and '
+                         'unexpected...\n'
+                         '\n'
+                         'How about this concept: The universe might be '
+                         'fundamentally made of information, not matter - and '
+                         'consciousness could be what information feels like '
+                         'from the inside.\n'
+                         '\n'
+                         'Or something about time...\n'
+                         '\n'
+                         "Or this: Every decision you've never made is still a "
+                         'version of you that exists somewhere, and silence '
+                         'itself is a choice that shapes reality just as '
+                         'loudly as action.\n'
+                         '\n'
+                         'Let me craft something creative and punchy.',
              'type': 'thinking'}}
   type: non_standard, keys: ['type', 'value']
 { 'index': 1,
-  'text': "Here's one:\n"
+  'text': '**The idea:** Every scar on your body is essentially your skin '
+          'writing its autobiography — a physical memoir of every fire you '
+          'touched, every fall you survived, every moment you were almost '
+          "defeated but weren't.\n"
           '\n'
-          '**Every scar on your body is essentially a map your skin drew to '
-          'remember a story your brain might have already forgotten.** You '
-          'carry an entire autobiography written in tissue, stitched quietly '
-          'beneath your clothes — chapters of childhood falls, clumsy '
-          'kitchens, and close calls. Your body is the most loyal biographer '
-          "you'll ever have.",
+          'You are literally *covered in proof* that you survived everything '
+          'that tried to stop you. Your body has been quietly keeping score '
+          "this whole time, and the record shows — you're still winning.",
   'type': 'text'}
   type: text, keys: ['text', 'type', 'index']
 Block types in response: ['thinking', 'text']
-Full response usage metadata: {'input_tokens': 54, 'output_tokens': 100, 'total_tokens': 154, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
+Full response usage metadata: {'input_tokens': 55, 'output_tokens': 187, 'total_tokens': 242, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
