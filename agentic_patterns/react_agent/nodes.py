@@ -38,8 +38,8 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
                     continue
                 chunk.content = [{"type": last_type, last_type: chunk.content}]
 
-            ai_message = chunk if ai_message is None else ai_message + chunk  # type: ignore[assignment]
-            runtime.stream_writer(handle_message(chunk, agent_name=runtime.context.agent_name))
+            ai_message = chunk if ai_message is None else ai_message + chunk
+            runtime.stream_writer(handle_message(chunk.model_copy(deep=True), agent_name=runtime.context.agent_name))
 
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
