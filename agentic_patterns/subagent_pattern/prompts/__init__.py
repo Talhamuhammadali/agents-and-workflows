@@ -1,7 +1,7 @@
 """Prompt constants for the subagent pattern."""
 
-from agentic_pattern.subagent_pattern.prompts.agent_prompts import MAIN_AGENT_SYSTEM_PROMPT
-from agentic_pattern.subagent_pattern.prompts.tool_prompts import (
+from agentic_patterns.subagent_pattern.prompts.agent_prompts import MAIN_AGENT_SYSTEM_PROMPT
+from agentic_patterns.subagent_pattern.prompts.tool_prompts import (
     CREATE_FILE_DESCRIPTION,
     UPDATE_TODOS_DESCRIPTION,
 )
