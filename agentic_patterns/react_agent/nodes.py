@@ -29,14 +29,25 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
         async for chunk in llm.astream([system_message, *messages]):
             if not isinstance(chunk, AIMessageChunk):
                 continue
+            if isinstance(chunk.content, str):
+                # Patch for gemini-2.5-pro
+                last_type = (
+                    ai_message.content_blocks[-1].get("type") if ai_message and ai_message.content_blocks else None
+                )
+                if not last_type:
+                    continue
+                chunk.content = [{"type": last_type, last_type: chunk.content}]
+
             ai_message = chunk if ai_message is None else ai_message + chunk  # type: ignore[assignment]
             runtime.stream_writer(handle_message(chunk, agent_name=runtime.context.agent_name))
+
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
             pprint(enriched_message.model_dump(), indent=2)
             return {"messages": [enriched_message]}
         else:
-            raise ValueError("No Response received from LLM stream.")
+            print("[agent_node] No AIMessage received from LLM.")
+            raise ValueError("LLM did not return any message.")
     except Exception as e:
         print(f"[agent_node] Error: {e}")
         raise
