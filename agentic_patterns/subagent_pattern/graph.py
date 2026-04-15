@@ -1,7 +1,5 @@
 """Graph definition for the subagent pattern."""
 
-from langgraph.graph import END, START, StateGraph
-
 # TODO 1: Import nodes and router from nodes.py
 from agentic_pattern.subagent_pattern.nodes import (
     agent_node,
@@ -10,6 +8,7 @@ from agentic_pattern.subagent_pattern.nodes import (
     tool_node,
 )
 from agentic_pattern.subagent_pattern.state import AgentState, ContextSchema
+from langgraph.graph import END, START, StateGraph
 
 # Build the harness
 Agent_Builder = StateGraph(AgentState, context_schema=ContextSchema)
