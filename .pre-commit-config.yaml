@@ -13,3 +13,4 @@ repos:
         entry: uv run mypy
         language: system
         types: [python]
+        exclude: ^(experiments|tests)/
