@@ -1,6 +1,7 @@
 """React agent state definitions and context schema."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import NotRequired
 
 from langgraph.graph import MessagesState
@@ -19,3 +20,4 @@ class ReactAgentContextSchema:
 
     agent_name: str
     model: str
+    workspace: Path | None = None

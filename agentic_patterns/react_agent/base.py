@@ -9,8 +9,12 @@ from langgraph.typing import ContextT, StateT
 
 # I know langchain has create_agent, this is just to learn
 def build_react_agent(
-    agent_node: Callable, router: Callable, agent_state: StateT, context_schema: ContextT, tools: list
-) -> StateGraph:
+    agent_node: Callable,
+    router: Callable,
+    agent_state: type[StateT],
+    context_schema: type[ContextT],
+    tools: list,
+) -> StateGraph[StateT, ContextT, StateT, StateT]:
     """Build the graph for the React agent with configurations."""
     # Build the harness
     Agent_Builder = StateGraph(agent_state, context_schema=context_schema)

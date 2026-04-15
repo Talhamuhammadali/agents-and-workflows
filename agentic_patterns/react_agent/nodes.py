@@ -7,17 +7,16 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
 from agentic_patterns.react_agent.state import ReactAgentContextSchema, ReactAgentState
+from agentic_patterns.react_agent.tools import TOOLS
 from agentic_patterns.shared.helper import handle_message, pre_llm_processing
 from utils.llms import MODELS
-
-TOOLS: list = []  # Define your tools here
 
 
 async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Runtime[ReactAgentContextSchema]) -> dict:  # type: ignore[type-arg]
     """Invoke the llm with pre and post llm processing."""
     try:
         print("====> [agent_node] <====")
-        message: str = state["message"]
+        message: str = state.get("message", "No message provided")
         messages: list[BaseMessage] = list(state.get("messages", []))
         messages = pre_llm_processing(message, messages)
         system_message = SystemMessage(content="Helpful assistant for the user")
@@ -27,17 +26,17 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
         llm = base_llm.bind_tools(TOOLS)
         ai_message: AIMessageChunk | None = None
 
-        for chunk in llm.stream([system_message, *messages]):
+        async for chunk in llm.astream([system_message, *messages]):
             if not isinstance(chunk, AIMessageChunk):
                 continue
             ai_message = chunk if ai_message is None else ai_message + chunk  # type: ignore[assignment]
             runtime.stream_writer(handle_message(chunk, agent_name=runtime.context.agent_name))
-
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
-            messages.append(enriched_message)
-        pprint(enriched_message.model_dump(), indent=2)
-        return {"messages": messages}
+            pprint(enriched_message.model_dump(), indent=2)
+            return {"messages": [enriched_message]}
+        else:
+            raise ValueError("No Response received from LLM stream.")
     except Exception as e:
         print(f"[agent_node] Error: {e}")
         raise
