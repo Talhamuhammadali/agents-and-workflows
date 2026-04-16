@@ -19,6 +19,7 @@ dependencies = [
     { name = "langgraph-cli", extra = ["inmem"] },
     { name = "langgraph-sdk" },
     { name = "python-dotenv" },
+    { name = "types-aiofiles" },
 ]
 
 [package.dev-dependencies]
@@ -42,6 +43,7 @@ requires-dist = [
     { name = "langgraph-cli", extras = ["inmem"], specifier = ">=0.4.19" },
     { name = "langgraph-sdk", specifier = ">=0.3.12" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "types-aiofiles", specifier = ">=25.1.0.20260409" },
 ]
 
 [package.metadata.requires-dev]
@@ -2263,6 +2265,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/53/a3/1585216310e344e8102c22482f6060c7a6ea0322b63e026372e6dcefcfd6/truststore-0.10.4.tar.gz", hash = "sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301", size = 26169 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/19/97/56608b2249fe206a67cd573bc93cd9896e1efb9e98bce9c163bcdc704b88/truststore-0.10.4-py3-none-any.whl", hash = "sha256:adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981", size = 18660 },
+]
+
+[[package]]
+name = "types-aiofiles"
+version = "25.1.0.20260409"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/66/9e62a2692792bc96c0f423f478149f4a7b84720704c546c8960b0a047c89/types_aiofiles-25.1.0.20260409.tar.gz", hash = "sha256:49e67d72bdcf9fe406f5815758a78dc34a1249bb5aa2adba78a80aec0a775435", size = 14812 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/d0/28236f869ba4dfb223ecdbc267eb2bdb634b81a561dd992230a4f9ec48fa/types_aiofiles-25.1.0.20260409-py3-none-any.whl", hash = "sha256:923fedb532c772cc0f62e0ce4282725afa82ca5b41cabd9857f06b55e5eee8de", size = 14372 },
 ]
 
 [[package]]

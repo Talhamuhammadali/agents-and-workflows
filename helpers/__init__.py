@@ -1,5 +1,5 @@
 """
-Filesystem & Shell Tools Available to Claude Code
+Filesystem & Shell Tools Available
 ===================================================
 
 This module documents all filesystem and shell tools available.

@@ -17,6 +17,7 @@ dependencies = [
     "langgraph-cli[inmem]>=0.4.19",
     "langgraph-sdk>=0.3.12",
     "python-dotenv>=1.2.2",
+    "types-aiofiles>=25.1.0.20260409",
 ]
 
 [dependency-groups]
