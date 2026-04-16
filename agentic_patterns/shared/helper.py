@@ -1,8 +1,8 @@
 import difflib
+import hashlib
 from typing import Any
 
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage
-from langchain_core.messages.tool import ToolCall
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
@@ -41,24 +41,39 @@ def get_filesystem(tool_runtime: ToolRuntime) -> FileSystem:
     return FileSystem(workspace=str(workspace))
 
 
+def content_hash(content: str) -> str:
+    """Return a short md5 hex digest of content."""
+    return hashlib.md5(content.encode()).hexdigest()
+
+
 def tool_reply(
-    tool_runtime: ToolRuntime, key: str, extra_messages: list[BaseMessage] | None = None, **kwargs: Any
+    tool_runtime: ToolRuntime,
+    key: str,
+    extra_messages: list[BaseMessage] | None = None,
+    response_metadata: dict | None = None,
+    **kwargs: Any,
 ) -> Command:
     """Build a Command with a ToolMessage from a feedback key, optionally followed by extra messages."""
-    messages: list[BaseMessage] = [ToolMessage(content=feedback(key, **kwargs), tool_call_id=tool_runtime.tool_call_id)]
+    messages: list[BaseMessage] = [
+        ToolMessage(
+            content=feedback(key, **kwargs),
+            tool_call_id=tool_runtime.tool_call_id,
+            response_metadata=response_metadata or {},
+        )
+    ]
     if extra_messages:
         messages.extend(extra_messages)
     return Command(update={"messages": messages})
 
 
-def find_last_file_interaction(path: str, messages: list[BaseMessage]) -> ToolCall | None:
-    """Walk messages backward, find last AIMessage with a tool_call for read_file/write_file on this path."""
+def find_last_file_hash(path: str, messages: list[BaseMessage]) -> str | None:
+    """Walk messages backward, find the content hash from the last read/write ToolMessage for this path."""
     for msg in reversed(messages):
-        if not isinstance(msg, AIMessage) or not msg.tool_calls:
+        if not isinstance(msg, ToolMessage):
             continue
-        for tc in msg.tool_calls:
-            if tc["name"] in _FILE_TOOL_NAMES and tc["args"].get("path") == path:
-                return tc
+        meta = msg.response_metadata or {}
+        if meta.get("path") == path and meta.get("tool_name") in _FILE_TOOL_NAMES:
+            return meta.get("content_hash")
     return None
 
 

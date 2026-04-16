@@ -16,7 +16,8 @@ from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
 from agentic_patterns.shared.helper import (
-    find_last_file_interaction,
+    content_hash,
+    find_last_file_hash,
     format_cat_n,
     generate_diff,
     get_filesystem,
@@ -36,13 +37,12 @@ async def write_file(path: str, content: str, tool_runtime: ToolRuntime) -> Comm
 
     try:
         await fs.write(path, content)
-        key = "write_success"
+        meta = {"path": path, "tool_name": "write_file", "content_hash": content_hash(content)}
+        return tool_reply(tool_runtime, "write_success", response_metadata=meta, path=path)
     except FileNotFoundError:
-        key = "write_error_no_parent"
+        return tool_reply(tool_runtime, "write_error_no_parent", path=path)
     except PermissionError:
-        key = "write_error_permission"
-
-    return tool_reply(tool_runtime, key, path=path)
+        return tool_reply(tool_runtime, "write_error_permission", path=path)
 
 
 @tool(name_or_callable="edit_file", description=EDIT_FILE_DESCRIPTION)
@@ -92,13 +92,16 @@ async def read_file(
     except PermissionError:
         return tool_reply(tool_runtime, "read_error_permission", path=path)
 
+    current_hash = content_hash(content)
+
     if not force:
         messages = (tool_runtime.state or {}).get("messages") or []
-        last = find_last_file_interaction(path, messages)
-        if last is not None:
+        last_hash = find_last_file_hash(path, messages)
+        if last_hash is not None and last_hash == current_hash:
             return tool_reply(tool_runtime, "read_unchanged", path=path)
 
-    return tool_reply(tool_runtime, "read_success", content=format_cat_n(content))
+    meta = {"path": path, "tool_name": "read_file", "content_hash": current_hash}
+    return tool_reply(tool_runtime, "read_success", response_metadata=meta, content=format_cat_n(content))
 
 
 FILE_TOOLS: list = [write_file, edit_file, read_file]
