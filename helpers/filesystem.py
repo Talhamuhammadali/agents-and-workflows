@@ -15,7 +15,7 @@ class FileSystem:
     _BLOCKED_COMMANDS = frozenset({"apt", "apt-get", "yum", "dnf", "pacman", "sudo"})
 
     def __init__(self, workspace: str, allow_system_install: bool = False) -> None:
-        """Initialize filesystem with a workspace root directory."""
+        """Initialize filesystem with a workspace oot directory."""
         workspace_path = Path(workspace).resolve()
         if not workspace_path.is_dir():
             raise ValueError(f"Workspace directory does not exist: {workspace_path}")

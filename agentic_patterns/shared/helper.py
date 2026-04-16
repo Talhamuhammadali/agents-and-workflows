@@ -1,4 +1,15 @@
+import difflib
+from typing import Any
+
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage
+from langchain_core.messages.tool import ToolCall
+from langgraph.prebuilt import ToolRuntime
+from langgraph.types import Command
+
+from agentic_patterns.shared.prompts.workspace_feedback import feedback
+from helpers.filesystem import FileSystem
+
+_FILE_TOOL_NAMES = frozenset({"read_file", "write_file"})
 
 
 def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMessage]:
@@ -20,6 +31,54 @@ def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMe
     messages = messages or []
     messages.append(user_message)
     return messages
+
+
+def get_filesystem(tool_runtime: ToolRuntime) -> FileSystem:
+    """Extract workspace from ToolRuntime context and return a FileSystem instance."""
+    workspace = getattr(tool_runtime.context, "workspace", None)
+    if workspace is None:
+        raise RuntimeError("No workspace configured in agent context.")
+    return FileSystem(workspace=str(workspace))
+
+
+def tool_reply(
+    tool_runtime: ToolRuntime, key: str, extra_messages: list[BaseMessage] | None = None, **kwargs: Any
+) -> Command:
+    """Build a Command with a ToolMessage from a feedback key, optionally followed by extra messages."""
+    messages: list[BaseMessage] = [ToolMessage(content=feedback(key, **kwargs), tool_call_id=tool_runtime.tool_call_id)]
+    if extra_messages:
+        messages.extend(extra_messages)
+    return Command(update={"messages": messages})
+
+
+def find_last_file_interaction(path: str, messages: list[BaseMessage]) -> ToolCall | None:
+    """Walk messages backward, find last AIMessage with a tool_call for read_file/write_file on this path."""
+    for msg in reversed(messages):
+        if not isinstance(msg, AIMessage) or not msg.tool_calls:
+            continue
+        for tc in msg.tool_calls:
+            if tc["name"] in _FILE_TOOL_NAMES and tc["args"].get("path") == path:
+                return tc
+    return None
+
+
+def generate_diff(before: str, after: str, path: str, context_lines: int = 3) -> str:
+    """Generate a unified diff between before and after content."""
+    return "".join(
+        difflib.unified_diff(
+            before.splitlines(keepends=True),
+            after.splitlines(keepends=True),
+            fromfile=f"a/{path}",
+            tofile=f"b/{path}",
+            n=context_lines,
+        )
+    )
+
+
+def format_cat_n(content: str) -> str:
+    """Format file content with line numbers like cat -n."""
+    lines = content.splitlines(keepends=True)
+    return "".join(f"{i + 1}\t{line}" for i, line in enumerate(lines))
 
 
 def handle_message(

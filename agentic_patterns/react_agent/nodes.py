@@ -6,6 +6,7 @@ from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, Syst
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
+from agentic_patterns.react_agent.prompts import REACT_AGENT_SYSTEM_PROMPT
 from agentic_patterns.react_agent.state import ReactAgentContextSchema, ReactAgentState
 from agentic_patterns.react_agent.tools import TOOLS
 from agentic_patterns.shared.helper import handle_message, pre_llm_processing
@@ -19,7 +20,7 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
         message: str = state.get("message", "No message provided")
         messages: list[BaseMessage] = list(state.get("messages", []))
         messages = pre_llm_processing(message, messages)
-        system_message = SystemMessage(content="Helpful assistant for the user")
+        system_message = SystemMessage(content=REACT_AGENT_SYSTEM_PROMPT)
 
         print(f"[agent_node] Sending to LLM with context: {runtime.context}")
         base_llm = MODELS[runtime.context.model]  # type: ignore[index]
