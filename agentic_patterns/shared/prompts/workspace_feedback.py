@@ -20,6 +20,10 @@ EDIT_ERROR_PERMISSION = "{prefix} Error: Permission denied — path '{path}' esc
 
 READ_SUCCESS = "{content}"
 READ_UNCHANGED = "{prefix} File unchanged since last read: {path}. Use that as it is still valid."
+READ_ERROR_TOO_LARGE = (
+    "{prefix} Error: File too large (~{token_count} tokens) for '{path}'. "
+    "Use grep_search to find relevant lines, then read_file with offset/limit for a windowed read."
+)
 READ_ERROR_NOT_FOUND = "{prefix} Error: File not found: {path}"
 READ_ERROR_PERMISSION = "{prefix} Error: Permission denied — path '{path}' escapes the workspace."
 
@@ -35,6 +39,7 @@ FEEDBACK = {
     "edit_error_multiple": EDIT_ERROR_MULTIPLE,
     "edit_error_permission": EDIT_ERROR_PERMISSION,
     "read_unchanged": READ_UNCHANGED,
+    "read_error_too_large": READ_ERROR_TOO_LARGE,
     "read_error_not_found": READ_ERROR_NOT_FOUND,
     "read_error_permission": READ_ERROR_PERMISSION,
 }

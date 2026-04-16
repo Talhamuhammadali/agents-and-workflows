@@ -12,6 +12,8 @@ Bash tools (TODO):
 """
 
 from langchain.tools import tool
+from langchain_core.messages import HumanMessage
+from langchain_core.messages.utils import count_tokens_approximately
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
@@ -28,6 +30,8 @@ from agentic_patterns.shared.prompts.workspace_prompts import (
     READ_FILE_DESCRIPTION,
     WRITE_FILE_DESCRIPTION,
 )
+
+MAX_READ_TOKENS = 20_000
 
 
 @tool(name_or_callable="write_file", description=WRITE_FILE_DESCRIPTION)
@@ -91,6 +95,10 @@ async def read_file(
         return tool_reply(tool_runtime, "read_error_not_found", path=path)
     except PermissionError:
         return tool_reply(tool_runtime, "read_error_permission", path=path)
+
+    token_count = count_tokens_approximately([HumanMessage(content=content)])
+    if token_count > MAX_READ_TOKENS:
+        return tool_reply(tool_runtime, "read_error_too_large", path=path, token_count=token_count)
 
     current_hash = content_hash(content)
 
