@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, ChevronRight, Brain, MessageSquare } from "lucide-react";
+import { Sparkles, ChevronRight, Brain, Wrench } from "lucide-react";
 import ToolCallItem from "./ToolCallItem";
 
 // Find the matching tool result message for a given tool_call id
@@ -12,24 +12,18 @@ function findToolResult(toolCallId, allMessages, aiMessageIndex) {
   return null;
 }
 
-function ThinkingBlock({ block }) {
+function ReasoningBlock({ block }) {
   const [open, setOpen] = useState(false);
-  const content = block.thinking || block.reasoning || "";
-  const label = block.type === "thinking" ? "Thinking" : "Reasoning";
-
   return (
-    <div className="thinking-block">
-      <button className="thinking-header" onClick={() => setOpen(!open)}>
-        <ChevronRight
-          size={14}
-          className={`chevron ${open ? "open" : ""}`}
-        />
-        <Brain size={14} className="thinking-icon" />
-        <span>{label}</span>
+    <div className="reasoning-block">
+      <button className="collapsible-header" onClick={() => setOpen(!open)}>
+        <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
+        <Brain size={13} className="reasoning-icon" />
+        <span>Reasoning</span>
       </button>
       {open && (
-        <div className="thinking-content">
-          {content.split("\n").map((line, i) => (
+        <div className="collapsible-body reasoning-content">
+          {block.reasoning.split("\n").map((line, i) => (
             <p key={i}>{line || "\u00A0"}</p>
           ))}
         </div>
@@ -48,6 +42,34 @@ function TextBlock({ block }) {
   );
 }
 
+function ToolCallsSection({ toolCalls, allMessages, messageIndex }) {
+  const [open, setOpen] = useState(false);
+  const count = toolCalls.length;
+
+  return (
+    <div className="tool-calls-section">
+      <button className="collapsible-header" onClick={() => setOpen(!open)}>
+        <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
+        <Wrench size={13} className="tool-icon" />
+        <span>
+          {count} tool call{count > 1 ? "s" : ""}
+        </span>
+      </button>
+      {open && (
+        <div className="collapsible-body tool-calls-list">
+          {toolCalls.map((tc) => (
+            <ToolCallItem
+              key={tc.id}
+              toolCall={tc}
+              toolResult={findToolResult(tc.id, allMessages, messageIndex)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AIMessage({ message, allMessages, messageIndex }) {
   const blocks = message.content_blocks || [];
   const toolCalls = message.tool_calls || [];
@@ -55,41 +77,23 @@ export default function AIMessage({ message, allMessages, messageIndex }) {
   return (
     <div className="message ai-message">
       <div className="message-avatar">
-        <Bot size={18} />
+        <Sparkles size={16} />
       </div>
       <div className="message-body">
-        {message.name && (
-          <span className="agent-name">{message.name}</span>
-        )}
+        {message.name && <span className="agent-name">{message.name}</span>}
 
-        {/* Content blocks: thinking/reasoning + text */}
         {blocks.map((block, i) => {
-          if (block.type === "thinking" || block.type === "reasoning") {
-            return <ThinkingBlock key={i} block={block} />;
-          }
-          if (block.type === "text") {
-            return <TextBlock key={i} block={block} />;
-          }
+          if (block.type === "reasoning") return <ReasoningBlock key={i} block={block} />;
+          if (block.type === "text") return <TextBlock key={i} block={block} />;
           return null;
         })}
 
-        {/* Tool calls timeline */}
         {toolCalls.length > 0 && (
-          <div className="tool-calls-section">
-            <div className="tool-calls-label">
-              <MessageSquare size={13} />
-              <span>
-                {toolCalls.length} tool call{toolCalls.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            {toolCalls.map((tc) => (
-              <ToolCallItem
-                key={tc.id}
-                toolCall={tc}
-                toolResult={findToolResult(tc.id, allMessages, messageIndex)}
-              />
-            ))}
-          </div>
+          <ToolCallsSection
+            toolCalls={toolCalls}
+            allMessages={allMessages}
+            messageIndex={messageIndex}
+          />
         )}
       </div>
     </div>

@@ -35,8 +35,8 @@ DUMMY_CONVERSATION = {
             "name": "essay-writer",
             "content_blocks": [
                 {
-                    "type": "thinking",
-                    "thinking": (
+                    "type": "reasoning",
+                    "reasoning": (
                         "The user wants an essay about quantum computing and wants files created. "
                         "Let me break this down:\n\n"
                         "1. First I'll research the key concepts to cover\n"
