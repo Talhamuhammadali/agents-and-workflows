@@ -31,14 +31,15 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
             if isinstance(chunk.content, str):
                 # Patch for gemini-2.5-pro
                 print(f"[agent_node] Received chunk from LLM: {chunk.content}")
+                print(len(ai_message.content_blocks) if ai_message and ai_message.content_blocks else 0)
                 last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
                 if last_block:
                     new_block = {**last_block}
                     block_type = str(new_block.get("type", "text"))
-                    new_block[block_type] = chunk.content.strip()
+                    new_block[block_type] = chunk.content
                     chunk.content = [new_block]
                 else:
-                    chunk.content = [{"type": "text", "text": chunk.content.strip()}]
+                    chunk.content = [{"type": "text", "text": chunk.content, "index": 0}]
 
             ai_message = chunk if ai_message is None else ai_message + chunk
             runtime.stream_writer(handle_message(chunk.model_copy(deep=True), agent_name=runtime.context.agent_name))
