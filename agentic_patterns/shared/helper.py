@@ -2,14 +2,21 @@ import difflib
 import hashlib
 from typing import Any
 
-from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage, ToolMessageChunk
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
-from agentic_patterns.shared.prompts.workspace_feedback import feedback
+from agentic_patterns.shared.prompts.bash_feedback import BASH_FEEDBACK
+from agentic_patterns.shared.prompts.workspace_feedback import FILE_FEEDBACK, SYSTEM_PREFIX
 from helpers.filesystem import FileSystem
 
 _FILE_TOOL_NAMES = frozenset({"read_file", "write_file"})
+_FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK}
+
+
+def feedback(key: str, **kwargs: Any) -> str:
+    """Return a formatted feedback message for a given key and kwargs."""
+    return _FEEDBACK[key].format(prefix=SYSTEM_PREFIX, **kwargs)
 
 
 def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMessage]:
@@ -97,7 +104,9 @@ def format_cat_n(content: str) -> str:
 
 
 def handle_message(
-    message: AIMessage | AIMessageChunk | HumanMessage, internal: bool = False, agent_name: str | None = None
+    message: AIMessage | AIMessageChunk | HumanMessage | ToolMessageChunk,
+    internal: bool = False,
+    agent_name: str | None = None,
 ) -> BaseMessage:
     """Handle incoming messages from the LLM stream."""
     additional_kwargs = {"internal": internal}

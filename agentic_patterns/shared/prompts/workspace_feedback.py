@@ -28,7 +28,7 @@ READ_ERROR_NOT_FOUND = "{prefix} Error: File not found: {path}"
 READ_ERROR_PERMISSION = "{prefix} Error: Permission denied — path '{path}' escapes the workspace."
 
 
-FEEDBACK = {
+FILE_FEEDBACK = {
     "read_success": READ_SUCCESS,
     "write_success": WRITE_SUCCESS,
     "write_error_no_parent": WRITE_ERROR_NO_PARENT,
@@ -43,8 +43,3 @@ FEEDBACK = {
     "read_error_not_found": READ_ERROR_NOT_FOUND,
     "read_error_permission": READ_ERROR_PERMISSION,
 }
-
-
-def feedback(key: str, **kwargs: dict) -> str:
-    """Return a formatted feedback message for a given key and kwargs."""
-    return FEEDBACK[key].format(prefix=SYSTEM_PREFIX, **kwargs)

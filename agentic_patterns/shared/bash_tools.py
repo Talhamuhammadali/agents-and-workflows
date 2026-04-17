@@ -5,16 +5,55 @@
 - glob_search: Find files by glob pattern
 """
 
+from collections.abc import AsyncGenerator
+from typing import cast
+
 from langchain.tools import tool
+from langchain_core.messages import HumanMessage, ToolMessageChunk
+from langchain_core.messages.utils import count_tokens_approximately
+from langgraph.config import get_stream_writer
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
+from agentic_patterns.shared.helper import get_filesystem, handle_message, tool_reply
+from agentic_patterns.shared.prompts.bash_prompts import BASH_DESCRIPTION
 
-@tool(name_or_callable="bash", description="TODO")
+MAX_BASH_TOKENS = 10_000
+
+
+@tool(name_or_callable="bash", description=BASH_DESCRIPTION)
 async def bash(command: str, tool_runtime: ToolRuntime, timeout: int = 120) -> Command:
-    """Execute a shell command in the workspace."""
-    # TODO: implement
-    return Command(update={"messages": []})
+    """Execute a shell command in the workspace, streaming output to the UI."""
+    if not command.strip():
+        return tool_reply(tool_runtime, "bash_error_empty")
+
+    fs = get_filesystem(tool_runtime)
+
+    try:
+        stream = cast(AsyncGenerator[str, None], await fs.bash(command, timeout=timeout))
+    except PermissionError as exc:
+        return tool_reply(tool_runtime, "bash_error_blocked", reason=str(exc))
+    except ValueError:
+        return tool_reply(tool_runtime, "bash_error_empty")
+
+    writer = get_stream_writer()
+    agent_name = getattr(tool_runtime.context, "agent_name", None)
+    tool_call_id = tool_runtime.tool_call_id or ""
+    chunks: list[str] = []
+
+    async for chunk in stream:
+        chunks.append(chunk)
+        tool_chunk = ToolMessageChunk(content=chunk, tool_call_id=tool_call_id)
+        writer(handle_message(tool_chunk, agent_name=agent_name))
+
+    output = "".join(chunks)
+    token_count = count_tokens_approximately([HumanMessage(content=output)])
+    if token_count > MAX_BASH_TOKENS:
+        # Preserve tail: approximate chars to keep based on token ratio.
+        keep_chars = max(1, int(len(output) * (MAX_BASH_TOKENS / token_count)))
+        return tool_reply(tool_runtime, "bash_truncated", max_tokens=MAX_BASH_TOKENS, output=output[-keep_chars:])
+
+    return tool_reply(tool_runtime, "bash_success", output=output)
 
 
 @tool(name_or_callable="grep_search", description="TODO")

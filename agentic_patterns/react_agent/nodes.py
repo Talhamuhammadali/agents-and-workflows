@@ -1,7 +1,5 @@
 """Fixed graph nodes for react agent."""
 
-from pprint import pprint
-
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
@@ -32,19 +30,22 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
                 continue
             if isinstance(chunk.content, str):
                 # Patch for gemini-2.5-pro
-                last_type = (
-                    ai_message.content_blocks[-1].get("type") if ai_message and ai_message.content_blocks else None
-                )
-                if not last_type:
-                    continue
-                chunk.content = [{"type": last_type, last_type: chunk.content}]
+                print(f"[agent_node] Received chunk from LLM: {chunk.content}")
+                last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
+                if last_block:
+                    new_block = {**last_block}
+                    block_type = str(new_block.get("type", "text"))
+                    new_block[block_type] = chunk.content.strip()
+                    chunk.content = [new_block]
+                else:
+                    chunk.content = [{"type": "text", "text": chunk.content.strip()}]
 
             ai_message = chunk if ai_message is None else ai_message + chunk
             runtime.stream_writer(handle_message(chunk.model_copy(deep=True), agent_name=runtime.context.agent_name))
 
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
-            pprint(enriched_message.model_dump(), indent=2)
+            # pprint(enriched_message.model_dump(), indent=2)
             return {"messages": [enriched_message]}
         else:
             print("[agent_node] No AIMessage received from LLM.")
