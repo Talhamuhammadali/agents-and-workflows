@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from models import MessageResponse
+from ui.backend.models import MessageResponse
 
 TS = "2026-04-18T10:00:00Z"
 

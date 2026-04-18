@@ -11,8 +11,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from models import MessageResponse, StreamRequest
-from dummy import THREADS, _msg, _now
+from ui.backend.models import MessageResponse, StreamRequest
+from ui.backend.dummy import THREADS, _msg, _now
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])

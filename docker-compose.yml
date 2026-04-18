@@ -1,18 +1,64 @@
 services:
   redis:
     image: redis/redis-stack:latest
+    container_name: agents-redis
     ports:
-      - "${REDIS_PORT:-6379}:6379"
-      - "${REDIS_INSIGHT_PORT:-8001}:8001"
+      - "6379:6379"
+      - "8001:8001"
     volumes:
       - redis_data:/data
-    environment:
-      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD:-}
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-}", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - agents-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: ui/backend/Dockerfile
+    container_name: agents-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PYTHONPATH=/app
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - .:/app
+      - backend_venv:/app/.venv
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - agents-net
+
+  frontend:
+    build:
+      context: ui/frontend
+      dockerfile: Dockerfile
+    container_name: agents-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_TARGET=http://backend:8000
+    volumes:
+      - ./ui/frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - agents-net
+
+networks:
+  agents-net:
+    driver: bridge
 
 volumes:
   redis_data:
+  backend_venv:
+  frontend_node_modules:
