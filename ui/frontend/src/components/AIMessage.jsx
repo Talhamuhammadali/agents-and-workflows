@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, ChevronRight, Brain, Wrench } from "lucide-react";
 import ToolCallItem from "./ToolCallItem";
 
@@ -12,14 +12,16 @@ function findToolResult(toolCallId, allMessages, aiMessageIndex) {
   return null;
 }
 
-function ReasoningBlock({ block }) {
+function ReasoningBlock({ block, live }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="reasoning-block">
       <button className="collapsible-header" onClick={() => setOpen(!open)}>
         <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
-        <Brain size={13} className="reasoning-icon" />
-        <span>Reasoning</span>
+        <Brain size={13} className={`reasoning-icon ${live ? "live-icon" : ""}`} />
+        <span className={live ? "live-label" : ""}>
+          {live ? "Reasoning…" : "Reasoning"}
+        </span>
       </button>
       {open && (
         <div className="collapsible-body reasoning-content">
@@ -32,27 +34,35 @@ function ReasoningBlock({ block }) {
   );
 }
 
-function TextBlock({ block }) {
+function TextBlock({ block, live }) {
+  const lines = block.text.split("\n");
   return (
-    <div className="text-block">
-      {block.text.split("\n").map((line, i) => (
-        <p key={i}>{line || "\u00A0"}</p>
+    <div className={`text-block ${live ? "live" : ""}`}>
+      {lines.map((line, i) => (
+        <p key={i}>
+          {line || "\u00A0"}
+          {live && i === lines.length - 1 && <span className="live-caret" />}
+        </p>
       ))}
     </div>
   );
 }
 
-function ToolCallsSection({ toolCalls, allMessages, messageIndex }) {
-  const [open, setOpen] = useState(false);
+function ToolCallsSection({ toolCalls, allMessages, messageIndex, sectionLive, liveCallId }) {
+  const [open, setOpen] = useState(sectionLive);
   const count = toolCalls.length;
+
+  useEffect(() => {
+    if (sectionLive) setOpen(true);
+  }, [sectionLive]);
 
   return (
     <div className="tool-calls-section">
       <button className="collapsible-header" onClick={() => setOpen(!open)}>
         <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
-        <Wrench size={13} className="tool-icon" />
-        <span>
-          {count} tool call{count > 1 ? "s" : ""}
+        <Wrench size={13} className={`tool-icon ${sectionLive ? "live-icon" : ""}`} />
+        <span className={sectionLive ? "live-label" : ""}>
+          {sectionLive ? "Running tools…" : `${count} tool call${count > 1 ? "s" : ""}`}
         </span>
       </button>
       {open && (
@@ -62,6 +72,7 @@ function ToolCallsSection({ toolCalls, allMessages, messageIndex }) {
               key={tc.id}
               toolCall={tc}
               toolResult={findToolResult(tc.id, allMessages, messageIndex)}
+              isLive={tc.id === liveCallId}
             />
           ))}
         </div>
@@ -70,9 +81,14 @@ function ToolCallsSection({ toolCalls, allMessages, messageIndex }) {
   );
 }
 
-export default function AIMessage({ message, allMessages, messageIndex }) {
+export default function AIMessage({ message, allMessages, messageIndex, isLive }) {
   const blocks = message.content_blocks || [];
   const toolCalls = message.tool_calls || [];
+  const liveKey = isLive ? message.liveKey : null;
+
+  const liveBlockIndex = liveKey?.kind === "block" ? liveKey.index : -1;
+  const sectionLive = liveKey?.kind === "tool";
+  const liveCallId = liveKey?.kind === "tool" ? liveKey.callId : null;
 
   return (
     <div className="message ai-message">
@@ -83,8 +99,9 @@ export default function AIMessage({ message, allMessages, messageIndex }) {
         {message.name && <span className="agent-name">{message.name}</span>}
 
         {blocks.map((block, i) => {
-          if (block.type === "reasoning") return <ReasoningBlock key={i} block={block} />;
-          if (block.type === "text") return <TextBlock key={i} block={block} />;
+          const live = i === liveBlockIndex;
+          if (block.type === "reasoning") return <ReasoningBlock key={i} block={block} live={live} />;
+          if (block.type === "text") return <TextBlock key={i} block={block} live={live} />;
           return null;
         })}
 
@@ -93,6 +110,8 @@ export default function AIMessage({ message, allMessages, messageIndex }) {
             toolCalls={toolCalls}
             allMessages={allMessages}
             messageIndex={messageIndex}
+            sectionLive={sectionLive}
+            liveCallId={liveCallId}
           />
         )}
       </div>

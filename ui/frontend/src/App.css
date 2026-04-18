@@ -186,6 +186,42 @@
   color: var(--text-muted);
 }
 
+.thread-tabs {
+  gap: 4px;
+  padding: 0 8px;
+  overflow-x: auto;
+}
+
+.thread-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.thread-tab:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.thread-tab.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.send-btn:disabled,
+.chat-input input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -592,6 +628,60 @@
 
 .send-btn:hover {
   opacity: 0.9;
+}
+
+/* ========== Live streaming indicators ========== */
+/* Gradient sweep that scans across the label while the block is updating. */
+.live-label {
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 35%,
+    var(--accent) 50%,
+    var(--text-muted) 65%,
+    var(--text-muted) 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shimmer 2.2s linear infinite;
+  font-weight: 500;
+}
+
+.live-icon {
+  color: var(--accent);
+  animation: iconPulse 1.4s ease-in-out infinite;
+}
+
+.live-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: caretBlink 0.9s step-end infinite;
+}
+
+.tool-call-item.live {
+  box-shadow: 0 0 0 1px var(--accent-soft), 0 0 12px -4px var(--accent);
+}
+
+@keyframes shimmer {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -150% 0; }
+}
+
+@keyframes iconPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.12); }
+}
+
+@keyframes caretBlink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 /* ========== Animations ========== */

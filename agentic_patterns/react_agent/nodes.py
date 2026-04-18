@@ -20,7 +20,7 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
         messages = pre_llm_processing(message, messages)
         system_message = SystemMessage(content=REACT_AGENT_SYSTEM_PROMPT)
 
-        print(f"[agent_node] Sending to LLM with context: {runtime.context}")
+        print(f"[agent_node] Sending to LLM with context: {runtime.context.workspace}")
         base_llm = MODELS[runtime.context.model]  # type: ignore[index]
         llm = base_llm.bind_tools(TOOLS)
         ai_message: AIMessageChunk | None = None
@@ -30,7 +30,7 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
                 continue
             if isinstance(chunk.content, str):
                 # Patch for gemini-2.5-pro
-                print(f"[agent_node] Received chunk from LLM: {chunk.content}")
+                print(f"[agent_node] Received str chunk content from LLM")
                 print(len(ai_message.content_blocks) if ai_message and ai_message.content_blocks else 0)
                 last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
                 if last_block:
@@ -53,7 +53,7 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
             raise ValueError("LLM did not return any message.")
     except Exception as e:
         print(f"[agent_node] Error: {e}")
-        raise
+        raise e
 
 
 async def router(state: ReactAgentState) -> str:
