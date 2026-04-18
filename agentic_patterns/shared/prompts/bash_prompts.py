@@ -14,3 +14,37 @@ BASH_DESCRIPTION = (
     "  - System install commands (apt, apt-get, yum) are blocked.\n"
     "  - Output exceeding ~10k tokens is truncated; the tail is preserved."
 )
+
+GREP_SEARCH_DESCRIPTION = (
+    "Searches file contents in the workspace using a regular expression. "
+    "Use this to locate where a symbol, string, or pattern lives before reading or editing files.\n"
+    "Parameters:\n"
+    "  - pattern (str): Python-style regex to match against file contents.\n"
+    "  - path (str, optional): Directory to search within, relative to workspace. Defaults to '.'.\n"
+    "  - glob (str, optional): Glob filter for files (e.g. '**/*.py'). Ignored if file_type is set.\n"
+    "  - file_type (str, optional): Shorthand for a file extension (e.g. 'py' searches '**/*.py').\n"
+    "  - output_mode (str, optional): One of 'files_with_matches' (default), 'content', or 'count'.\n"
+    "  - after (int, optional): Lines of trailing context per match. Defaults to 0.\n"
+    "  - before (int, optional): Lines of leading context per match. Defaults to 0.\n"
+    "  - context (int, optional): Shortcut that sets both before and after.\n"
+    "  - case_insensitive (bool, optional): Case-insensitive match. Defaults to false.\n"
+    "  - multiline (bool, optional): Allow patterns to span lines (re.DOTALL | re.MULTILINE).\n"
+    "  - show_line_numbers (bool, optional): Prefix content output with line numbers. Defaults to true.\n"
+    "  - head_limit (int, optional): Maximum results to return. Defaults to 250.\n"
+    "  - offset (int, optional): Skip the first N matches before collecting results.\n"
+    "Notes:\n"
+    "  - Prefer grep_search over `bash rg/grep` — it runs in-process with workspace sandboxing.\n"
+    "  - Use 'files_with_matches' first to locate files, then 'content' to inspect hits."
+)
+
+GLOB_SEARCH_DESCRIPTION = (
+    "Finds files in the workspace matching a glob pattern, sorted by modification time (newest first). "
+    "Use this to discover files by name or extension without reading their contents.\n"
+    "Parameters:\n"
+    "  - pattern (str): Glob pattern (e.g. '**/*.py', 'src/**/test_*.ts').\n"
+    "  - path (str, optional): Directory to search within, relative to workspace. Defaults to '.'.\n"
+    "  - limit (int, optional): Maximum number of paths to return. Defaults to 200.\n"
+    "Notes:\n"
+    "  - Paths are returned relative to the workspace root.\n"
+    "  - Prefer glob_search over `bash find` — it runs in-process with workspace sandboxing."
+)

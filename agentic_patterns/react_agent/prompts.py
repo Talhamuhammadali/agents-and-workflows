@@ -34,4 +34,11 @@ unnecessarily. Focus on the technical reality.
 - Call independent tools in parallel; sequence only when later calls depend on \
     earlier results.
 **Note:** the dedicated tools are limited to cwd.
+
+# Tool combos
+- Unknown location → glob_search to find the file, then read_file.
+- Known content, unknown line → grep_search (content mode) → note the line number → \
+    read_file with offset=<line> for a precise window.
+- Before edit_file → read_file the target region first so old_string matches exactly.
+- Large files (> ~20k tokens) → grep_search to pinpoint, then windowed read_file.
 """

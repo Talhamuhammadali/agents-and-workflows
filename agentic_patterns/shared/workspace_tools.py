@@ -82,15 +82,15 @@ async def edit_file(
 async def read_file(
     tool_runtime: ToolRuntime,
     path: str,
-    offset: int = 0,
+    offset: int = 1,
     limit: int = 2000,
     force: bool = False,
 ) -> Command:
-    """Read file contents with optional offset and limit."""
+    """Read file contents with optional 1-indexed offset and limit."""
     fs = get_filesystem(tool_runtime)
 
     try:
-        content = await fs.read(path, offset=offset, limit=limit)
+        content = await fs.read(path, offset=max(0, offset - 1), limit=limit)
     except FileNotFoundError:
         return tool_reply(tool_runtime, "read_error_not_found", path=path)
     except PermissionError:

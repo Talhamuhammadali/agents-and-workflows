@@ -5,8 +5,9 @@
 - glob_search: Find files by glob pattern
 """
 
+import re
 from collections.abc import AsyncGenerator
-from typing import cast
+from typing import Any, cast
 
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage, ToolMessageChunk
@@ -16,7 +17,11 @@ from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
 from agentic_patterns.shared.helper import get_filesystem, handle_message, tool_reply
-from agentic_patterns.shared.prompts.bash_prompts import BASH_DESCRIPTION
+from agentic_patterns.shared.prompts.bash_prompts import (
+    BASH_DESCRIPTION,
+    GLOB_SEARCH_DESCRIPTION,
+    GREP_SEARCH_DESCRIPTION,
+)
 
 MAX_BASH_TOKENS = 10_000
 
@@ -56,31 +61,104 @@ async def bash(command: str, tool_runtime: ToolRuntime, timeout: int = 120) -> C
     return tool_reply(tool_runtime, "bash_success", output=output)
 
 
-@tool(name_or_callable="grep_search", description="TODO")
+def _format_grep_results(results: list[Any], output_mode: str) -> str:
+    """Render grep results (list of str or dict) to plain text for the LLM."""
+    if not results:
+        return ""
+    if output_mode == "files_with_matches":
+        return "\n".join(cast(list[str], results))
+    if output_mode == "count":
+        return "\n".join(f"{r['file']}: {r['count']}" for r in results)
+    # content mode
+    blocks: list[str] = []
+    for r in results:
+        if "lines" in r:
+            blocks.append(f"{r['file']}\n{r['lines']}")
+        else:
+            blocks.append(f"{r['file']}\t{r['match']}")
+    return "\n--\n".join(blocks)
+
+
+@tool(name_or_callable="grep_search", description=GREP_SEARCH_DESCRIPTION)
 async def grep_search(
     pattern: str,
     tool_runtime: ToolRuntime,
     path: str = ".",
     glob: str | None = None,
     file_type: str | None = None,
+    output_mode: str = "files_with_matches",
     after: int = 0,
     before: int = 0,
     context: int = 0,
+    case_insensitive: bool = False,
+    multiline: bool = False,
+    show_line_numbers: bool = True,
+    head_limit: int = 250,
+    offset: int = 0,
 ) -> Command:
     """Search file contents with regex."""
-    # TODO: implement
-    return Command(update={"messages": []})
+    fs = get_filesystem(tool_runtime)
+
+    try:
+        results = await fs.grep(
+            pattern,
+            path=path,
+            glob=glob,
+            file_type=file_type,
+            output_mode=output_mode,
+            after=after,
+            before=before,
+            context=context,
+            case_insensitive=case_insensitive,
+            multiline=multiline,
+            show_line_numbers=show_line_numbers,
+            head_limit=head_limit,
+            offset=offset,
+        )
+    except re.error as exc:
+        return tool_reply(tool_runtime, "grep_error_invalid_regex", pattern=pattern, reason=str(exc))
+    except FileNotFoundError:
+        return tool_reply(tool_runtime, "search_error_not_found", path=path)
+    except PermissionError:
+        return tool_reply(tool_runtime, "search_error_permission", path=path)
+
+    if not results:
+        return tool_reply(tool_runtime, "search_no_matches", pattern=pattern, path=path)
+
+    output = _format_grep_results(results, output_mode)
+    token_count = count_tokens_approximately([HumanMessage(content=output)])
+    if token_count > MAX_BASH_TOKENS:
+        keep_chars = max(1, int(len(output) * (MAX_BASH_TOKENS / token_count)))
+        return tool_reply(tool_runtime, "bash_truncated", max_tokens=MAX_BASH_TOKENS, output=output[-keep_chars:])
+    return tool_reply(tool_runtime, "bash_success", output=output)
 
 
-@tool(name_or_callable="glob_search", description="TODO")
+@tool(name_or_callable="glob_search", description=GLOB_SEARCH_DESCRIPTION)
 async def glob_search(
     pattern: str,
     tool_runtime: ToolRuntime,
     path: str = ".",
+    limit: int = 200,
 ) -> Command:
     """Find files matching a glob pattern."""
-    # TODO: implement
-    return Command(update={"messages": []})
+    fs = get_filesystem(tool_runtime)
+
+    try:
+        matches = await fs.glob(pattern, path=path, limit=limit)
+    except FileNotFoundError:
+        return tool_reply(tool_runtime, "search_error_not_found", path=path)
+    except PermissionError:
+        return tool_reply(tool_runtime, "search_error_permission", path=path)
+
+    if not matches:
+        return tool_reply(tool_runtime, "search_no_matches", pattern=pattern, path=path)
+
+    output = "\n".join(matches)
+    token_count = count_tokens_approximately([HumanMessage(content=output)])
+    if token_count > MAX_BASH_TOKENS:
+        keep_chars = max(1, int(len(output) * (MAX_BASH_TOKENS / token_count)))
+        return tool_reply(tool_runtime, "bash_truncated", max_tokens=MAX_BASH_TOKENS, output=output[-keep_chars:])
+    return tool_reply(tool_runtime, "bash_success", output=output)
 
 
 BASH_TOOLS: list = [bash, grep_search, glob_search]

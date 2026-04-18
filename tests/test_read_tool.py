@@ -178,8 +178,9 @@ class TestReadOffsetLimit:
 
     @pytest.mark.asyncio
     async def test_offset(self):
+        """1-indexed offset: offset=4 starts at `def format_name` line."""
         rt = make_runtime()
-        result = await read_file.coroutine(tool_runtime=rt, path="src/utils.py", offset=3)
+        result = await read_file.coroutine(tool_runtime=rt, path="src/utils.py", offset=4)
         content = extract_content(result)
         assert "format_name" in content
         assert '"""Utility functions' not in content
