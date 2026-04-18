@@ -1,6 +1,6 @@
 """Main agent file for the React agent."""
 
-from agentic_patterns.react_agent.base import build_react_agent
+from agentic_patterns.base import build_react_agent
 from agentic_patterns.react_agent.nodes import agent_node, router
 from agentic_patterns.react_agent.state import ReactAgentContextSchema, ReactAgentState
 from agentic_patterns.react_agent.tools import TOOLS
