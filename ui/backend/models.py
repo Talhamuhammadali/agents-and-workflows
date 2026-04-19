@@ -34,3 +34,17 @@ class StreamRequest(BaseModel):
     """Body for POST /api/threads/{thread_id}/stream."""
 
     message: str
+
+
+class ThreadMeta(BaseModel):
+    """Thread registry entry — persisted in Redis under `ui:thread:{thread_id}`."""
+
+    thread_id: str
+    title: str
+    updated_at: str
+
+
+class CreateThreadRequest(BaseModel):
+    """Body for POST /api/threads — title is optional, defaults to 'New chat'."""
+
+    title: str | None = None

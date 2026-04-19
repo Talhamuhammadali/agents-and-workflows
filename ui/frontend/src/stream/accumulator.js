@@ -68,7 +68,7 @@ export function accumulate(events) {
       const callId = typeof content === "object" ? content.id : id;
       let call = ai.tool_calls.find((t) => t.id === callId);
       if (!call) {
-        call = { id: callId, name: "", args: {}, type: "tool_call" };
+        call = { id: callId, name: "", args: {} };
         ai.tool_calls.push(call);
       }
       if (typeof content === "string") {

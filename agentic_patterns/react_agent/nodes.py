@@ -46,8 +46,8 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
 
         if ai_message is not None:
             enriched_message = handle_message(ai_message, agent_name=runtime.context.agent_name)
-            # pprint(enriched_message.model_dump(), indent=2)
-            return {"messages": [enriched_message]}
+            # Last message in state is always the user message, so we append the new ai message after it.
+            return {"messages": [messages[-1], enriched_message] if messages else [enriched_message]}
         else:
             print("[agent_node] No AIMessage received from LLM.")
             raise ValueError("LLM did not return any message.")

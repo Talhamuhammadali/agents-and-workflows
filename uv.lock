@@ -5,7 +5,7 @@ requires-python = "==3.12.*"
 [[package]]
 name = "agents-and-workflows"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
     { name = "fastapi" },
@@ -21,6 +21,7 @@ dependencies = [
     { name = "langgraph-sdk" },
     { name = "python-dotenv" },
     { name = "types-aiofiles" },
+    { name = "uuid-utils" },
     { name = "uvicorn" },
 ]
 
@@ -47,6 +48,7 @@ requires-dist = [
     { name = "langgraph-sdk", specifier = ">=0.3.12" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "types-aiofiles", specifier = ">=25.1.0.20260409" },
+    { name = "uuid-utils", specifier = ">=0.14.1" },
     { name = "uvicorn", specifier = ">=0.44.0" },
 ]
 

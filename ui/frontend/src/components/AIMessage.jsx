@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Sparkles, ChevronRight, Brain, Wrench } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import ToolCallItem from "./ToolCallItem";
+
+function Markdown({ children }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {children || ""}
+    </ReactMarkdown>
+  );
+}
 
 // Find the matching tool result message for a given tool_call id
 function findToolResult(toolCallId, allMessages, aiMessageIndex) {
@@ -24,10 +34,8 @@ function ReasoningBlock({ block, live }) {
         </span>
       </button>
       {open && (
-        <div className="collapsible-body reasoning-content">
-          {block.reasoning.split("\n").map((line, i) => (
-            <p key={i}>{line || "\u00A0"}</p>
-          ))}
+        <div className="collapsible-body reasoning-content markdown-body">
+          <Markdown>{block.reasoning}</Markdown>
         </div>
       )}
     </div>
@@ -35,15 +43,10 @@ function ReasoningBlock({ block, live }) {
 }
 
 function TextBlock({ block, live }) {
-  const lines = block.text.split("\n");
   return (
-    <div className={`text-block ${live ? "live" : ""}`}>
-      {lines.map((line, i) => (
-        <p key={i}>
-          {line || "\u00A0"}
-          {live && i === lines.length - 1 && <span className="live-caret" />}
-        </p>
-      ))}
+    <div className={`text-block markdown-body ${live ? "live" : ""}`}>
+      <Markdown>{block.text}</Markdown>
+      {live && <span className="live-caret" />}
     </div>
   );
 }
