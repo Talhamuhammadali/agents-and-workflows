@@ -30,7 +30,7 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
                 continue
             if isinstance(chunk.content, str):
                 # Patch for gemini-2.5-pro
-                print(f"[agent_node] Received str chunk content from LLM")
+                print("[agent_node] Received str chunk content from LLM")
                 print(len(ai_message.content_blocks) if ai_message and ai_message.content_blocks else 0)
                 last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
                 if last_block:

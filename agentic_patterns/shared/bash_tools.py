@@ -7,7 +7,7 @@
 
 import re
 from collections.abc import AsyncGenerator
-from typing import Any, cast
+from typing import cast
 
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage, ToolMessageChunk
@@ -16,7 +16,7 @@ from langgraph.config import get_stream_writer
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
-from agentic_patterns.shared.helper import get_filesystem, handle_message, tool_reply, format_grep_results
+from agentic_patterns.shared.helper import format_grep_results, get_filesystem, handle_message, tool_reply
 from agentic_patterns.shared.prompts.bash_prompts import (
     BASH_DESCRIPTION,
     GLOB_SEARCH_DESCRIPTION,
@@ -59,7 +59,6 @@ async def bash(command: str, tool_runtime: ToolRuntime, timeout: int = 120) -> C
         return tool_reply(tool_runtime, "bash_truncated", max_tokens=MAX_BASH_TOKENS, output=output[-keep_chars:])
 
     return tool_reply(tool_runtime, "bash_success", output=output)
-
 
 
 @tool(name_or_callable="grep_search", description=GREP_SEARCH_DESCRIPTION)
