@@ -3,21 +3,26 @@
 Each thread stores a flat MessageResponse[] list. The UI accumulator folds
 it into the rendered shape (see ui/docs/sse-streaming.md).
 """
+import os
 
-import asyncio
-import uuid
-
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from ui.backend.models import MessageResponse, StreamRequest
-from ui.backend.dummy import THREADS, _msg, _now
+
+from langchain_core.runnables import RunnableConfig
+from langgraph.checkpoint.redis import AsyncRedisSaver
+from langgraph.store.redis import AsyncRedisStore
+from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
+from agentic_patterns.react_agent.state import ReactAgentContextSchema
+
+from ui.backend.dummy import THREADS, _msg 
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# --- Routes --------------------------------------------------------------
 
 @app.get("/api/threads")
 def list_threads():
@@ -54,193 +59,41 @@ def get_thread_state(thread_id: str):
     }
 
 
-def _chunks(text: str, n: int = 4) -> list[str]:
-    """Split text into ~n pieces so streaming feels live."""
-    if not text:
-        return [""]
-    size = max(1, len(text) // n)
-    return [text[i : i + size] for i in range(0, len(text), size)]
-
-
-DEMO_TOOLS = [
-    (
-        "read_file",
-        {"path": "notes.txt"},
-        "Some existing notes.\n- item 1\n- item 2\n",
-    ),
-    (
-        "write_file",
-        {
-            "path": "demo.md",
-            "content": "# Demo\n\nWritten by the dummy agent to exercise every renderer.\n",
-        },
-        "File written: demo.md (72 bytes)",
-    ),
-    (
-        "edit_file",
-        {
-            "path": "demo.md",
-            "old_string": "Written by the dummy agent to exercise every renderer.",
-            "new_string": "Edited by the dummy agent — diff view should show this swap.",
-        },
-        "File edited: demo.md",
-    ),
-    (
-        "bash",
-        {"command": "pytest tests/ -v"},
-        "===== test session starts =====\n"
-        "collected 8 items\n\n"
-        "tests/test_parse.py::test_basic PASSED\n"
-        "tests/test_parse.py::test_empty PASSED\n"
-        "tests/test_parse.py::test_unicode PASSED\n"
-        "tests/test_io.py::test_read PASSED\n"
-        "tests/test_io.py::test_write PASSED\n"
-        "tests/test_cli.py::test_help PASSED\n"
-        "tests/test_render.py::test_basic PASSED\n"
-        "tests/test_render.py::test_streaming PASSED\n\n"
-        "===== 8 passed in 1.24s =====\n",
-    ),
-    (
-        "update_todos",
-        {
-            "todos": [
-                {"id": "d1", "task": "Kick the tires on every tool", "completed": True},
-                {"id": "d2", "task": "Confirm the fallback renderer fires", "completed": True},
-                {"id": "d3", "task": "Wire in the real agent", "completed": False},
-            ],
-        },
-        "Todos updated. 3 item(s) in list.",
-    ),
-    (
-        # Unknown tool — exercises FallbackView.
-        "fetch_url",
-        {"url": "https://example.com/quantum-refs", "format": "markdown"},
-        "Fetched 2KB of markdown from example.com/quantum-refs",
-    ),
-]
-
-
-_EXT_TO_LANG = {
-    ".md": "markdown",
-    ".py": "python",
-    ".txt": "plaintext",
-    ".json": "json",
-    ".js": "javascript",
-}
-
-
-def _lang_for(path: str) -> str:
-    for ext, lang in _EXT_TO_LANG.items():
-        if path.endswith(ext):
-            return lang
-    return "plaintext"
-
-
-def _apply_tool_side_effect(thread: dict, name: str, args: dict) -> None:
-    """Mutate thread state as if the tool actually ran.
-
-    Makes the /state re-fetch after a stream visibly change the sidebar,
-    artifact panel, and todos — confirming the split endpoint wiring.
-    """
-    if name == "write_file":
-        path = args["path"]
-        if not any(f["name"] == path for f in thread["workspace"]):
-            thread["workspace"].append({"name": path, "type": "file"})
-        thread["artifact"] = {
-            "title": path,
-            "language": _lang_for(path),
-            "content": args["content"],
-        }
-    elif name == "edit_file":
-        art = thread.get("artifact")
-        if art and art["title"] == args["path"]:
-            thread["artifact"] = {
-                **art,
-                "content": art["content"].replace(args["old_string"], args["new_string"]),
-            }
-    elif name == "update_todos":
-        thread["todos"] = list(args["todos"])
-
-
-async def _dummy_reply(thread_id: str, user_message: str):
-    """Emit a canned AI turn that exercises every tool renderer."""
-    thread = THREADS[thread_id]
-    ai_id = f"ai-{uuid.uuid4().hex[:6]}"
-
-    def mk(mtype, content):
-        return _msg(
-            ai_id, "ai", mtype, content,
-            thread_id=thread_id, name="dummy-agent", timestamp=_now(),
-        )
-
-    reasoning = mk(
-        "reasoning",
-        f"User said: \"{user_message[:80]}\".\n\n"
-        "I'll walk through every tool I have so each renderer lights up:\n"
-        "1. read_file  — path-only view\n"
-        "2. write_file — show the written content\n"
-        "3. edit_file  — old→new diff\n"
-        "4. bash       — command + output (streamed)\n"
-        "5. update_todos — mini checklist\n"
-        "6. fetch_url  — unknown tool, falls through to the JSON view",
-    )
-    for chunk in _chunks(reasoning.content, n=8):
-        yield reasoning.model_copy(update={"content": chunk})
-        await asyncio.sleep(0.28)
-
-    intro = mk("text", "Demoing every tool in one turn — watch the renderers.")
-    for chunk in _chunks(intro.content, n=6):
-        yield intro.model_copy(update={"content": chunk})
-        await asyncio.sleep(0.25)
-
-    for name, args, result in DEMO_TOOLS:
-        call_id = f"call_{uuid.uuid4().hex[:6]}"
-        yield mk("tool_call", {"id": call_id, "name": name, "type": "tool_call", "args": args})
-        _apply_tool_side_effect(thread, name, args)
-        await asyncio.sleep(0.5)
-
-        if name == "bash":
-            # Stream bash output line-by-line to exercise tool_result chunking.
-            for line in result.splitlines(keepends=True):
-                yield _msg(
-                    call_id, "tool_result", "tool_result", line,
-                    thread_id=thread_id, name=name, timestamp=_now(),
-                )
-                await asyncio.sleep(0.2)
-        else:
-            yield _msg(
-                call_id, "tool_result", "tool_result", result,
-                thread_id=thread_id, name=name, timestamp=_now(),
-            )
-            await asyncio.sleep(0.45)
-
-    closing = mk(
-        "text",
-        "Done — every renderer got a turn. Expand any tool call above to inspect it.",
-    )
-    for chunk in _chunks(closing.content, n=6):
-        yield closing.model_copy(update={"content": chunk})
-        await asyncio.sleep(0.25)
-
-
 @app.post("/api/threads/{thread_id}/stream")
 async def stream_reply(thread_id: str, body: StreamRequest):
-    if thread_id not in THREADS:
-        raise HTTPException(404, "Thread not found")
-
-    thread = THREADS[thread_id]
-    user_msg = _msg(
-        f"h-{uuid.uuid4().hex[:6]}", "human", "text", body.message,
-        thread_id=thread_id, timestamp=_now(),
-    )
-
-    async def gen():
-        emitted: list[MessageResponse] = [user_msg]
-        yield user_msg.model_dump_json() + "\n"
-        async for ev in _dummy_reply(thread_id, body.message):
-            emitted.append(ev)
-            yield ev.model_dump_json() + "\n"
-        thread["messages"].extend(emitted)
-        thread["updated_at"] = _now()
-
-    return StreamingResponse(gen(), media_type="application/x-ndjson")
+    """Stream an agents response."""
+    if not thread_id:
+        raise HTTPException(404, "Thread id not provided.")
+    if not body.message:
+        raise HTTPException(400, "Message not provided.")
+    
+    redis_url = os.environ.get("REDIS_URL")
+    async with AsyncRedisStore.from_conn_string(redis_url) as store:
+        store.setup()
+        async with AsyncRedisSaver.from_conn_string(redis_url) as ch:
+            await ch.asetup()
+            print("Setup complete, starting stream...")
+            agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
+            context = ReactAgentContextSchema(
+                workspace=Path("tests/workspace/sandbox").resolve(),
+                agent_name="ReactAgent",
+                model="gemini-2.5-pro",
+            )
+            
+            config = RunnableConfig(
+                configurable={"thread_id": thread_id},
+            )
+            
+            inputs = {"message": body.message,}
+            
+            async def event_generator():
+                async for chunk in agent.astream(inputs, context=context, config=config, version="v2"):
+                    print(f"Yielding chunk: \n\n{chunk}")
+                    yield f"data: {chunk.model_json()}\n\n"
+            return StreamingResponse(
+                event_generator(),
+                media_type="text/event-stream",
+                headers={
+                     "Cache-Control": "no-cache", "X-Accel-Buffering": "no", "connection": "keep-alive"
+                    },
+            )
