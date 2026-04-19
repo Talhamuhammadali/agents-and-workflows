@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { ChevronRight, Wrench, CheckCircle2 } from "lucide-react";
 import { renderToolCall } from "./toolRenderers";
 
-export default function ToolCallItem({ toolCall, toolResult, isLive }) {
-  const [open, setOpen] = useState(isLive);
+export default function ToolCallItem({ toolCall, toolResult, isComplete, isLive }) {
+  const [open, setOpen] = useState(!isComplete);
 
-  // Track the active tool only: open on live, collapse once it's no longer
-  // the active one. User can still click to re-expand finished tools.
+  // Stay expanded while running; collapse when the tool is done (either a
+  // result arrived, the LLM resumed, or the turn ended).
   useEffect(() => {
-    setOpen(isLive);
-  }, [isLive]);
+    setOpen(!isComplete);
+  }, [isComplete]);
 
   return (
     <div className={`tool-call-item ${isLive ? "live" : ""}`}>
@@ -19,7 +19,7 @@ export default function ToolCallItem({ toolCall, toolResult, isLive }) {
         <span className={`tool-name ${isLive ? "live-label" : ""}`}>
           {toolCall.name}
         </span>
-        {toolResult && !isLive && <CheckCircle2 size={13} className="tool-done-icon" />}
+        {isComplete && !isLive && <CheckCircle2 size={13} className="tool-done-icon" />}
       </button>
 
       {open && (

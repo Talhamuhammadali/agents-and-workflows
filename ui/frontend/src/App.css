@@ -23,25 +23,6 @@
   border-left: 1px solid var(--border);
 }
 
-/* ========== Panel Headers ========== */
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  height: 48px;
-  flex-shrink: 0;
-}
-
-.panel-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-
 /* ========== Sidebar ========== */
 .sidebar-header {
   display: flex;
@@ -61,26 +42,6 @@
   color: var(--text-muted);
 }
 
-.icon-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 120ms ease;
-}
-
-.icon-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-  border-color: var(--border-strong);
-}
-
 .file-tree {
   padding: 8px;
   overflow-y: auto;
@@ -91,17 +52,40 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   padding: 6px 10px;
+  border: none;
   border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
   font-size: var(--text-base);
   color: var(--text-muted);
+  background: transparent;
   cursor: pointer;
+  text-align: left;
   transition: all 120ms ease;
 }
 
 .file-item:hover {
   background: var(--surface-hover);
   color: var(--text);
+}
+
+.file-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.file-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-tree-empty {
+  padding: 8px 10px;
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  font-style: italic;
 }
 
 .file-icon {
@@ -145,17 +129,6 @@
   color: var(--text);
 }
 
-.artifact-lang {
-  margin-left: auto;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
 .artifact-content {
   flex: 1;
   overflow: auto;
@@ -168,6 +141,12 @@
   word-wrap: break-word;
 }
 
+.artifact-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 24px;
+}
+
 /* ========== Chat Panel ========== */
 .chat-header {
   display: flex;
@@ -176,14 +155,6 @@
   border-bottom: 1px solid var(--border);
   height: 48px;
   flex-shrink: 0;
-}
-
-.chat-header h2 {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
 }
 
 .thread-tabs {
@@ -322,12 +293,6 @@
   font-size: var(--text-md);
   line-height: 1.55;
   color: var(--text);
-}
-
-.text-block p {
-  font-size: var(--text-md);
-  color: var(--text);
-  line-height: 1.6;
 }
 
 /* ========== Markdown ========== */
@@ -509,19 +474,14 @@
   border-radius: var(--radius);
 }
 
-.reasoning-content.markdown-body {
-  color: var(--text-muted);
-  font-size: var(--text-base);
-}
-
 /* ========== Tool Calls Section ========== */
-.tool-calls-section {
+.tool-call-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.tool-calls-list {
+.tool-call-group-body {
   display: flex;
   flex-direction: column;
   gap: 4px;

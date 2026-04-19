@@ -12,6 +12,7 @@ class ReactAgentState(MessagesState):
 
     message: str
     todos: NotRequired[list[dict]]
+    workspace: NotRequired[str]
 
 
 @dataclass

@@ -3,19 +3,25 @@
 //
 //   [
 //     { type: "human", content },
-//     { type: "ai", id, name, content_blocks: [...], tool_calls: [...] },
+//     { type: "ai", id, name, content_blocks: [...] },
 //     { type: "tool", tool_call_id, name, content },
 //     ...
 //   ]
 //
-// Events with the same `id` extend the same AI message. Tool results use
-// their own `id` as the tool_call_id link (see docs/sse-streaming.md).
+// Events with the same `id` extend the same AI message. Content blocks —
+// reasoning, text, tool_call — are appended to `content_blocks` in arrival
+// order so the UI renders them exactly as emitted. Tool results key on their
+// originating call id (see docs/sse-streaming.md).
 
 export function accumulate(events) {
   const messages = [];
   const argsBuffer = {}; // call_id -> raw JSON, for partial streaming args
 
   const findAi = (id) => messages.find((m) => m.type === "ai" && m.id === id);
+  const toolCallBlockIndex = (ai, callId) =>
+    ai.content_blocks.findIndex(
+      (b) => b.type === "tool_call" && b.call.id === callId
+    );
 
   for (const ev of events) {
     const { id, role_type, message_type, content, name } = ev;
@@ -35,12 +41,14 @@ export function accumulate(events) {
       } else {
         messages.push({ type: "tool", tool_call_id: id, name, content });
       }
-      // The owning AI message is still "live" on this tool until something
-      // else updates it — point its liveKey at the streaming call.
+      // Point the owning AI message's liveKey at the tool_call block whose
+      // result is currently streaming in.
       const owner = messages.find(
-        (m) => m.type === "ai" && m.tool_calls?.some((t) => t.id === id)
+        (m) => m.type === "ai" && toolCallBlockIndex(m, id) !== -1
       );
-      if (owner) owner.liveKey = { kind: "tool", callId: id };
+      if (owner) {
+        owner.liveKey = { kind: "block", index: toolCallBlockIndex(owner, id) };
+      }
       continue;
     }
 
@@ -48,7 +56,7 @@ export function accumulate(events) {
 
     let ai = findAi(id);
     if (!ai) {
-      ai = { type: "ai", id, name, content_blocks: [], tool_calls: [] };
+      ai = { type: "ai", id, name, content_blocks: [] };
       messages.push(ai);
     }
 
@@ -66,18 +74,22 @@ export function accumulate(events) {
 
     if (message_type === "tool_call") {
       const callId = typeof content === "object" ? content.id : id;
-      let call = ai.tool_calls.find((t) => t.id === callId);
-      if (!call) {
-        call = { id: callId, name: "", args: {} };
-        ai.tool_calls.push(call);
+      let idx = toolCallBlockIndex(ai, callId);
+      if (idx === -1) {
+        ai.content_blocks.push({
+          type: "tool_call",
+          call: { id: callId, name: "", args: {} },
+        });
+        idx = ai.content_blocks.length - 1;
       }
+      const call = ai.content_blocks[idx].call;
       if (typeof content === "string") {
         argsBuffer[callId] = (argsBuffer[callId] || "") + content;
         try { call.args = JSON.parse(argsBuffer[callId]); } catch {}
       } else {
         Object.assign(call, content);
       }
-      ai.liveKey = { kind: "tool", callId };
+      ai.liveKey = { kind: "block", index: idx };
     }
   }
 

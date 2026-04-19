@@ -44,38 +44,49 @@ function ReasoningBlock({ block, live }) {
 
 function TextBlock({ block, live }) {
   return (
-    <div className={`text-block markdown-body ${live ? "live" : ""}`}>
+    <div className="markdown-body">
       <Markdown>{block.text}</Markdown>
       {live && <span className="live-caret" />}
     </div>
   );
 }
 
-function ToolCallsSection({ toolCalls, allMessages, messageIndex, sectionLive, liveCallId }) {
-  const [open, setOpen] = useState(sectionLive);
-  const count = toolCalls.length;
+function ToolCallGroup({ items, allMessages, messageIndex, liveBlockIndex, hasBlocksAfter, messageIsLive }) {
+  const results = items.map(({ block }) =>
+    findToolResult(block.call.id, allMessages, messageIndex)
+  );
+  // A tool is "done" if its result arrived, OR the LLM resumed after this
+  // group (next block exists — Command-returning tools like update_todos
+  // never emit a result), OR the turn itself has ended.
+  const allComplete =
+    results.every(Boolean) || hasBlocksAfter || !messageIsLive;
+  const count = items.length;
 
+  const [open, setOpen] = useState(!allComplete);
   useEffect(() => {
-    if (sectionLive) setOpen(true);
-  }, [sectionLive]);
+    setOpen(!allComplete);
+  }, [allComplete]);
 
   return (
-    <div className="tool-calls-section">
+    <div className="tool-call-group">
       <button className="collapsible-header" onClick={() => setOpen(!open)}>
         <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
-        <Wrench size={13} className={`tool-icon ${sectionLive ? "live-icon" : ""}`} />
-        <span className={sectionLive ? "live-label" : ""}>
-          {sectionLive ? "Running tools…" : `${count} tool call${count > 1 ? "s" : ""}`}
+        <Wrench size={13} className={`tool-icon ${!allComplete ? "live-icon" : ""}`} />
+        <span className={!allComplete ? "live-label" : ""}>
+          {allComplete
+            ? `${count} tool call${count > 1 ? "s" : ""}`
+            : `Running ${count} tool${count > 1 ? "s" : ""}…`}
         </span>
       </button>
       {open && (
-        <div className="collapsible-body tool-calls-list">
-          {toolCalls.map((tc) => (
+        <div className="tool-call-group-body">
+          {items.map(({ block, index }, i) => (
             <ToolCallItem
-              key={tc.id}
-              toolCall={tc}
-              toolResult={findToolResult(tc.id, allMessages, messageIndex)}
-              isLive={tc.id === liveCallId}
+              key={block.call.id || index}
+              toolCall={block.call}
+              toolResult={results[i]}
+              isComplete={!!results[i] || hasBlocksAfter || !messageIsLive}
+              isLive={index === liveBlockIndex && messageIsLive}
             />
           ))}
         </div>
@@ -84,39 +95,65 @@ function ToolCallsSection({ toolCalls, allMessages, messageIndex, sectionLive, l
   );
 }
 
+// Collapse runs of adjacent tool_call blocks so they render as one visual
+// group — preserves the "3 calls together" shape of agent turns.
+function groupBlocks(blocks) {
+  const groups = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    if (block.type !== "tool_call") {
+      groups.push({ kind: "single", block, index: i });
+      continue;
+    }
+    const run = [{ block, index: i }];
+    while (i + 1 < blocks.length && blocks[i + 1].type === "tool_call") {
+      i += 1;
+      run.push({ block: blocks[i], index: i });
+    }
+    groups.push({ kind: "tool_group", items: run });
+  }
+  return groups;
+}
+
 export default function AIMessage({ message, allMessages, messageIndex, isLive }) {
   const blocks = message.content_blocks || [];
-  const toolCalls = message.tool_calls || [];
   const liveKey = isLive ? message.liveKey : null;
-
   const liveBlockIndex = liveKey?.kind === "block" ? liveKey.index : -1;
-  const sectionLive = liveKey?.kind === "tool";
-  const liveCallId = liveKey?.kind === "tool" ? liveKey.callId : null;
+
+  const groups = groupBlocks(blocks);
 
   return (
-    <div className="message ai-message">
+    <div className="message">
       <div className="message-avatar">
         <Sparkles size={16} />
       </div>
       <div className="message-body">
         {message.name && <span className="agent-name">{message.name}</span>}
 
-        {blocks.map((block, i) => {
-          const live = i === liveBlockIndex;
-          if (block.type === "reasoning") return <ReasoningBlock key={i} block={block} live={live} />;
-          if (block.type === "text") return <TextBlock key={i} block={block} live={live} />;
-          return null;
+        {groups.map((group, gi) => {
+          if (group.kind === "single") {
+            const { block, index } = group;
+            const live = index === liveBlockIndex;
+            if (block.type === "reasoning") {
+              return <ReasoningBlock key={gi} block={block} live={live} />;
+            }
+            if (block.type === "text") {
+              return <TextBlock key={gi} block={block} live={live} />;
+            }
+            return null;
+          }
+          return (
+            <ToolCallGroup
+              key={gi}
+              items={group.items}
+              allMessages={allMessages}
+              messageIndex={messageIndex}
+              liveBlockIndex={liveBlockIndex}
+              hasBlocksAfter={gi < groups.length - 1}
+              messageIsLive={isLive}
+            />
+          );
         })}
-
-        {toolCalls.length > 0 && (
-          <ToolCallsSection
-            toolCalls={toolCalls}
-            allMessages={allMessages}
-            messageIndex={messageIndex}
-            sectionLive={sectionLive}
-            liveCallId={liveCallId}
-          />
-        )}
       </div>
     </div>
   );

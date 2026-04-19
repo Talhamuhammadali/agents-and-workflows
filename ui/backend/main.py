@@ -17,6 +17,7 @@ from ui.backend.thread_store import (
     list_threads,
     load_agent_state,
 )
+from ui.backend.workspace import list_workspace
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -53,12 +54,12 @@ async def get_thread(thread_id: str) -> dict:
 
 @app.get("/api/threads/{thread_id}/state")
 async def get_thread_state(thread_id: str) -> dict:
-    """Panel state (todos) from the latest checkpointer snapshot."""
+    """Panel state — todos + workspace files, both sourced from agent state."""
     state = await load_agent_state(thread_id)
     return {
         "thread_id": thread_id,
         "todos": state.get("todos", []),
-        "workspace": [],
+        "workspace": await list_workspace(state.get("workspace")),
         "artifact": None,
     }
 

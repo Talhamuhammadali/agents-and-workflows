@@ -110,15 +110,55 @@ export default function App() {
     };
     setBundle((prev) => ({ ...prev, events: [...prev.events, humanEvent] }));
 
+    // These tools return Command(update=...) and never emit a tool_result on
+    // the custom stream — so we detect completion via the LLM resuming after
+    // ToolNode runs: the next AI text/reasoning event means state is committed.
+    const STATE_MUTATING = new Set([
+      "update_todos",
+      "write_file",
+      "edit_file",
+      "create_file",
+    ]);
+    let pendingRefetch = false;
+
+    async function refreshState() {
+      const state = await fetch(`/api/threads/${activeId}/state`).then((r) => r.json());
+      setBundle((prev) => ({
+        ...prev,
+        todos: state.todos,
+        workspace: state.workspace,
+      }));
+    }
+
     setSending(true);
     try {
       await streamPost(
         `/api/threads/${activeId}/stream`,
         { message },
-        (ev) => setBundle((prev) => ({ ...prev, events: [...prev.events, ev] }))
+        (ev) => {
+          setBundle((prev) => ({ ...prev, events: [...prev.events, ev] }));
+
+          if (
+            ev.role_type === "ai" &&
+            ev.message_type === "tool_call" &&
+            typeof ev.content === "object" &&
+            STATE_MUTATING.has(ev.content?.name)
+          ) {
+            pendingRefetch = true;
+            return;
+          }
+
+          if (
+            pendingRefetch &&
+            ev.role_type === "ai" &&
+            ev.message_type !== "tool_call"
+          ) {
+            pendingRefetch = false;
+            refreshState();
+          }
+        }
       );
-      const state = await fetch(`/api/threads/${activeId}/state`).then((r) => r.json());
-      setBundle((prev) => ({ ...prev, ...state }));
+      await refreshState();
     } catch (err) {
       console.error("Stream failed:", err);
     } finally {
@@ -126,9 +166,20 @@ export default function App() {
     }
   }
 
+  function handleSelectFile(file) {
+    setBundle((prev) => ({
+      ...prev,
+      artifact: { title: file.path, content: file.content },
+    }));
+  }
+
   return (
     <div className="app">
-      <Sidebar workspace={bundle.workspace} />
+      <Sidebar
+        workspace={bundle.workspace}
+        activePath={bundle.artifact?.title ?? null}
+        onSelectFile={handleSelectFile}
+      />
       <ArtifactPanel artifact={bundle.artifact} />
       <ChatPanel
         threads={threads}

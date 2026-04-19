@@ -20,6 +20,14 @@ services:
       context: .
       dockerfile: ui/backend/Dockerfile
     container_name: agents-backend
+    # Reload only on source changes — excludes tests/workspaces/* so agent
+    # file writes during a stream don't trigger a server restart.
+    command: >
+      uvicorn ui.backend.main:app --host 0.0.0.0 --port 8000 --reload
+      --reload-dir ui/backend
+      --reload-dir agentic_patterns
+      --reload-dir helpers
+      --reload-dir utils
     ports:
       - "8000:8000"
     environment:

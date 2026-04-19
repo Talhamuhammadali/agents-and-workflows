@@ -9,8 +9,8 @@ one agent turn into a single AI block. Tool results key on `tool_call_id` so
 the UI correlates each result back to its originating call.
 """
 
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import AsyncIterator
 
 from langchain_core.messages import (
     AIMessage,
@@ -67,19 +67,21 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
             parent_run_id = str(uuid7())
             events.append(
                 MessageResponse(
-                    id=msg.id or str(uuid7()), thread_id=thread_id, checkpoint_id=None,
-                    message_type=MessageTypes.TEXT, role_type="human", subtype=None,
-                    content=as_text(msg.content), name=None, timestamp=ts,
+                    id=msg.id or str(uuid7()),
+                    thread_id=thread_id,
+                    checkpoint_id=None,
+                    message_type=MessageTypes.TEXT,
+                    role_type="human",
+                    subtype=None,
+                    content=as_text(msg.content),
+                    name=None,
+                    timestamp=ts,
                 )
             )
         elif isinstance(msg, AIMessage):
-            events.extend(
-                ai_content_events(msg.content, msg.tool_calls, thread_id, parent_run_id, ts, msg.name)
-            )
+            events.extend(ai_content_events(msg.content, msg.tool_calls, thread_id, parent_run_id, ts, msg.name))
         elif isinstance(msg, ToolMessage):
-            events.append(
-                tool_result_event(as_text(msg.content), msg.tool_call_id or "", thread_id, ts, msg.name)
-            )
+            events.append(tool_result_event(as_text(msg.content), msg.tool_call_id or "", thread_id, ts, msg.name))
 
     return events
 
@@ -87,20 +89,26 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
 async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
     """Run one agent turn and yield SSE-formatted MessageResponse events."""
     parent_run_id = f"run-{uuid7()}"
+    workspace = Path("tests/workspaces/sandbox").resolve()
     async with AsyncRedisStore.from_conn_string(redis_url()) as store:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
             agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
             context = ReactAgentContextSchema(
-                workspace=Path("tests/workspaces/sandbox").resolve(),
+                workspace=workspace,
                 agent_name="ReactAgent",
                 model=Model.VERTEX_GEMINI_2_5.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
+            # Persist `workspace` into state so the UI can discover it later via
+            # /api/threads/{id}/state — same field the context uses at runtime.
             async for chunk in agent.astream(
-                {"message": message}, context=context, config=config,
-                stream_mode=["custom"], version="v2",
+                {"message": message, "workspace": str(workspace)},
+                context=context,
+                config=config,
+                stream_mode=["custom"],
+                version="v2",
             ):  # type: ignore[call-overload]
                 for event in chunk_to_events(chunk["data"], thread_id, parent_run_id):
                     yield f"data: {event.model_dump_json()}\n\n"
