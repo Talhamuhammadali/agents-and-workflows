@@ -16,7 +16,7 @@ from langgraph.config import get_stream_writer
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
-from agentic_patterns.shared.helper import get_filesystem, handle_message, tool_reply
+from agentic_patterns.shared.helper import get_filesystem, handle_message, tool_reply, format_grep_results
 from agentic_patterns.shared.prompts.bash_prompts import (
     BASH_DESCRIPTION,
     GLOB_SEARCH_DESCRIPTION,
@@ -60,23 +60,6 @@ async def bash(command: str, tool_runtime: ToolRuntime, timeout: int = 120) -> C
 
     return tool_reply(tool_runtime, "bash_success", output=output)
 
-
-def _format_grep_results(results: list[Any], output_mode: str) -> str:
-    """Render grep results (list of str or dict) to plain text for the LLM."""
-    if not results:
-        return ""
-    if output_mode == "files_with_matches":
-        return "\n".join(cast(list[str], results))
-    if output_mode == "count":
-        return "\n".join(f"{r['file']}: {r['count']}" for r in results)
-    # content mode
-    blocks: list[str] = []
-    for r in results:
-        if "lines" in r:
-            blocks.append(f"{r['file']}\n{r['lines']}")
-        else:
-            blocks.append(f"{r['file']}\t{r['match']}")
-    return "\n--\n".join(blocks)
 
 
 @tool(name_or_callable="grep_search", description=GREP_SEARCH_DESCRIPTION)
@@ -125,7 +108,7 @@ async def grep_search(
     if not results:
         return tool_reply(tool_runtime, "search_no_matches", pattern=pattern, path=path)
 
-    output = _format_grep_results(results, output_mode)
+    output = format_grep_results(results, output_mode)
     token_count = count_tokens_approximately([HumanMessage(content=output)])
     if token_count > MAX_BASH_TOKENS:
         keep_chars = max(1, int(len(output) * (MAX_BASH_TOKENS / token_count)))

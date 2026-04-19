@@ -1,6 +1,6 @@
 import difflib
 import hashlib
-from typing import Any
+from typing import Any, cast
 
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage, ToolMessageChunk
 from langgraph.prebuilt import ToolRuntime
@@ -17,6 +17,24 @@ _FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK}
 def feedback(key: str, **kwargs: Any) -> str:
     """Return a formatted feedback message for a given key and kwargs."""
     return _FEEDBACK[key].format(prefix=SYSTEM_PREFIX, **kwargs)
+
+
+def format_grep_results(results: list[Any], output_mode: str) -> str:
+    """Render grep results (list of str or dict) to plain text for the LLM."""
+    if not results:
+        return ""
+    if output_mode == "files_with_matches":
+        return "\n".join(cast(list[str], results))
+    if output_mode == "count":
+        return "\n".join(f"{r['file']}: {r['count']}" for r in results)
+    # content mode
+    blocks: list[str] = []
+    for r in results:
+        if "lines" in r:
+            blocks.append(f"{r['file']}\n{r['lines']}")
+        else:
+            blocks.append(f"{r['file']}\t{r['match']}")
+    return "\n--\n".join(blocks)
 
 
 def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMessage]:
