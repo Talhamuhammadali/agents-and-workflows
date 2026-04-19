@@ -1,0 +1,10 @@
+
+# Sample YAML content for .yaml file
+server:
+  port: 8080
+  host: localhost
+  services:
+    - name: auth
+      url: /auth
+    - name: content
+      url: /content

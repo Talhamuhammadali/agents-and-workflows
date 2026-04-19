@@ -1,0 +1,11 @@
+
+# Sample YAML content for .yml file
+person:
+  name: John Doe
+  age: 30
+  isStudent: false
+  courses:
+    - name: History
+      credits: 3
+    - name: Math
+      credits: 4
