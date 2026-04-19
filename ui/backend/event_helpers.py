@@ -25,12 +25,20 @@ def as_text(content: Any) -> str:
 def ai_content_events(
     content: Any,
     tool_calls: list[dict] | None,
+    tool_call_chunks: list[dict] | None,
     thread_id: str,
     parent_run_id: str,
     ts: str,
     name: str | None,
+    tc_index_to_id: dict[int, str] | None = None,
 ) -> list[MessageResponse]:
-    """Emit reasoning/text/tool_call events from one AI message (or chunk)."""
+    """Emit reasoning/text/tool_call events from one AI message (or chunk).
+
+    Streaming: caller passes `tool_call_chunks` (partial args deltas) + a
+    persistent `tc_index_to_id` map, since Claude/OpenAI drop id+name on
+    follow-up chunks — only `index` persists across a turn.
+    History: caller passes `tool_calls` (fully-formed, final args).
+    """
     events: list[MessageResponse] = []
 
     if isinstance(content, str) and content:
@@ -81,6 +89,36 @@ def ai_content_events(
                     )
                 )
             # 'reasoning' parts from Gemini are empty signature carriers — skip.
+
+    for tc in tool_call_chunks or []:
+        idx = tc.get("index")
+        tc_id = tc.get("id")
+        if tc_id and tc_index_to_id is not None and idx is not None:
+            tc_index_to_id[idx] = tc_id
+        elif not tc_id and tc_index_to_id is not None and idx is not None:
+            tc_id = tc_index_to_id.get(idx)
+        if not tc_id:
+            continue
+        payload: dict[str, Any] = {"id": tc_id}
+        if tc.get("name"):
+            payload["name"] = tc["name"]
+        if tc.get("args"):
+            payload["args_delta"] = tc["args"]
+        if len(payload) == 1:  # id only — nothing useful to emit
+            continue
+        events.append(
+            MessageResponse(
+                id=parent_run_id,
+                thread_id=thread_id,
+                checkpoint_id=None,
+                message_type=MessageTypes.TOOL_CALL,
+                role_type="ai",
+                subtype=None,
+                content=payload,
+                name=name,
+                timestamp=ts,
+            )
+        )
 
     for tc in tool_calls or []:
         events.append(

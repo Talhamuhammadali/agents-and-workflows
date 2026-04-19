@@ -1,0 +1,2 @@
+This is a demo file created during a multi-tool test.
+It shows file creation alongside todo updates.

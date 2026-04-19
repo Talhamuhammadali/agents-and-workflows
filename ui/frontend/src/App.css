@@ -21,6 +21,24 @@
 
 .chat-panel {
   border-left: 1px solid var(--border);
+  position: relative;
+}
+
+.chat-resizer {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 20;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.chat-resizer:hover,
+.chat-resizer:active {
+  background: var(--accent-soft);
 }
 
 /* ========== Sidebar ========== */
@@ -227,7 +245,7 @@
 }
 
 .send-btn:disabled,
-.chat-input input:disabled {
+.chat-input textarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -293,6 +311,8 @@
   font-size: var(--text-md);
   line-height: 1.55;
   color: var(--text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* ========== Markdown ========== */
@@ -673,6 +693,9 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  /* ~5 rows before scrolling: (14px * 1.5 line-height + 6px padding) * 5 + 4 gaps */
+  max-height: 145px;
+  overflow-y: auto;
 }
 
 .todo-item {
@@ -706,26 +729,68 @@
   padding: 12px 16px 14px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+  align-items: flex-end;
 }
 
-.chat-input input {
+.chat-textarea-wrap {
+  position: relative;
   flex: 1;
+  display: flex;
+}
+
+.chat-input textarea {
+  width: 100%;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 9px 12px;
+  padding: 9px 32px 9px 12px;
   font-family: var(--font-ui);
   font-size: var(--text-md);
   color: var(--text);
   outline: none;
+  resize: none;
+  line-height: 1.5;
+  min-height: 38px;
+  max-height: 180px;
+  overflow-y: auto;
   transition: border-color 120ms ease;
 }
 
-.chat-input input::placeholder {
+.chat-input textarea.expanded {
+  min-height: 220px;
+  max-height: 50vh;
+}
+
+.expand-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 120ms ease;
+}
+
+.expand-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+  opacity: 1;
+}
+
+.chat-input textarea::placeholder {
   color: var(--text-dim);
 }
 
-.chat-input input:focus {
+.chat-input textarea:focus {
   border-color: var(--accent);
 }
 
@@ -735,6 +800,8 @@
   border-radius: var(--radius);
   color: #0a0a0b;
   width: 36px;
+  height: 38px;
+  flex-shrink: 0;
   cursor: pointer;
   display: flex;
   align-items: center;

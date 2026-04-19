@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Send, X } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { Maximize2, Minimize2, Plus, Send, X } from "lucide-react";
 import HumanMessage from "./HumanMessage";
 import AIMessage from "./AIMessage";
 import TodoSection from "./TodoSection";
@@ -14,8 +14,19 @@ export default function ChatPanel({
   todos,
   onSend,
   sending,
+  chatWidth,
+  onChatWidthChange,
 }) {
   const [input, setInput] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const textareaRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [input, expanded]);
 
   // Only render human and ai messages (tool messages are shown inside AIMessage)
   const visibleMessages = messages.filter(
@@ -38,8 +49,39 @@ export default function ChatPanel({
     onSend(text);
   }
 
+  // Drag the left edge of the panel to resize the column width. Moving the
+  // pointer LEFT grows the chat (startX - clientX > 0); RIGHT shrinks it.
+  function onResizerPointerDown(e) {
+    if (!onChatWidthChange) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = chatWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    function onMove(ev) {
+      const next = Math.min(
+        Math.max(320, startWidth + (startX - ev.clientX)),
+        Math.floor(window.innerWidth * 0.7)
+      );
+      onChatWidthChange(next);
+    }
+    function onUp() {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
   return (
     <div className="chat-panel">
+      <div
+        className="chat-resizer"
+        onPointerDown={onResizerPointerDown}
+        title="Drag to resize"
+      />
       <div className="chat-header thread-tabs">
         {threads.map((t) => (
           <div
@@ -65,7 +107,6 @@ export default function ChatPanel({
           className="thread-tab new-thread-btn"
           onClick={onNewThread}
           title="New chat"
-          disabled={sending}
         >
           <Plus size={14} />
           New
@@ -93,14 +134,31 @@ export default function ChatPanel({
       <TodoSection todos={todos} />
 
       <div className="chat-input">
-        <input
-          type="text"
-          placeholder={sending ? "Streaming…" : "Type a message..."}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          disabled={sending}
-        />
+        <div className="chat-textarea-wrap">
+          <textarea
+            ref={textareaRef}
+            className={expanded ? "expanded" : ""}
+            rows={1}
+            placeholder={sending ? "Streaming…" : "Type a message... (Shift+Enter for new line)"}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            disabled={sending}
+          />
+          <button
+            type="button"
+            className="expand-btn"
+            onClick={() => setExpanded((v) => !v)}
+            title={expanded ? "Collapse" : "Expand"}
+          >
+            {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+          </button>
+        </div>
         <button className="send-btn" onClick={submit} disabled={sending || !input.trim()}>
           <Send size={16} />
         </button>

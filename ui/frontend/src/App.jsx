@@ -23,6 +23,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(null);
   const [bundle, setBundle] = useState(EMPTY_BUNDLE);
   const [sending, setSending] = useState(false);
+  const [chatWidth, setChatWidth] = useState(420);
 
   const messages = useMemo(() => accumulate(bundle.events), [bundle.events]);
   const didInit = useRef(false);
@@ -79,6 +80,9 @@ export default function App() {
   // Load messages + panel state in parallel whenever the active thread changes.
   useEffect(() => {
     if (!activeId) return;
+    // Thread context changed — any in-flight stream belongs to the old thread,
+    // so clear `sending` so this thread's input is usable.
+    setSending(false);
     Promise.all([
       fetch(`/api/threads/${activeId}`).then((r) => r.json()),
       fetch(`/api/threads/${activeId}/state`).then((r) => r.json()),
@@ -174,7 +178,10 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={{ gridTemplateColumns: `240px 1fr ${chatWidth}px` }}
+    >
       <Sidebar
         workspace={bundle.workspace}
         activePath={bundle.artifact?.title ?? null}
@@ -191,6 +198,8 @@ export default function App() {
         todos={bundle.todos}
         onSend={handleSend}
         sending={sending}
+        chatWidth={chatWidth}
+        onChatWidthChange={setChatWidth}
       />
     </div>
   );

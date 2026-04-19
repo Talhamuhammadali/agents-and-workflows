@@ -37,6 +37,7 @@ def chunk_to_events(
     chunk: AIMessageChunk | ToolMessageChunk,
     thread_id: str,
     parent_run_id: str,
+    tc_index_to_id: dict[int, str],
 ) -> list[MessageResponse]:
     """Fan a single stream chunk out into zero or more MessageResponse events."""
     ts = now_iso()
@@ -49,7 +50,18 @@ def chunk_to_events(
     if not isinstance(chunk, AIMessageChunk):
         return []
 
-    return ai_content_events(chunk.content, chunk.tool_calls, thread_id, parent_run_id, ts, chunk.name)
+    # Streaming path: emit partial args via tool_call_chunks, not tool_calls —
+    # chunk.tool_calls rebuilds a (garbage) entry on every delta, causing dupes.
+    return ai_content_events(
+        chunk.content,
+        tool_calls=None,
+        tool_call_chunks=chunk.tool_call_chunks,
+        thread_id=thread_id,
+        parent_run_id=parent_run_id,
+        ts=ts,
+        name=chunk.name,
+        tc_index_to_id=tc_index_to_id,
+    )
 
 
 def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[MessageResponse]:
@@ -79,7 +91,17 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
                 )
             )
         elif isinstance(msg, AIMessage):
-            events.extend(ai_content_events(msg.content, msg.tool_calls, thread_id, parent_run_id, ts, msg.name))
+            events.extend(
+                ai_content_events(
+                    msg.content,
+                    tool_calls=msg.tool_calls,
+                    tool_call_chunks=None,
+                    thread_id=thread_id,
+                    parent_run_id=parent_run_id,
+                    ts=ts,
+                    name=msg.name,
+                )
+            )
         elif isinstance(msg, ToolMessage):
             events.append(tool_result_event(as_text(msg.content), msg.tool_call_id or "", thread_id, ts, msg.name))
 
@@ -98,11 +120,11 @@ async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
             context = ReactAgentContextSchema(
                 workspace=workspace,
                 agent_name="ReactAgent",
-                model=Model.VERTEX_GEMINI_2_5.value,
+                model=Model.VERTEX_CLAUDE.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
-            # Persist `workspace` into state so the UI can discover it later via
-            # /api/threads/{id}/state — same field the context uses at runtime.
+            # track tool call chunks
+            tc_index_to_id: dict[int, str] = {}
             async for chunk in agent.astream(
                 {"message": message, "workspace": str(workspace)},
                 context=context,
@@ -110,5 +132,5 @@ async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
                 stream_mode=["custom"],
                 version="v2",
             ):  # type: ignore[call-overload]
-                for event in chunk_to_events(chunk["data"], thread_id, parent_run_id):
+                for event in chunk_to_events(chunk["data"], thread_id, parent_run_id, tc_index_to_id):
                     yield f"data: {event.model_dump_json()}\n\n"

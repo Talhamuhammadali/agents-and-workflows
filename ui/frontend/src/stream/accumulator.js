@@ -73,21 +73,24 @@ export function accumulate(events) {
     }
 
     if (message_type === "tool_call") {
-      const callId = typeof content === "object" ? content.id : id;
+      // Backend contract: content is always a dict with `id`.
+      // Streaming → {id, name?, args_delta}. History → {id, name, args}.
+      const callId = content.id;
       let idx = toolCallBlockIndex(ai, callId);
       if (idx === -1) {
         ai.content_blocks.push({
           type: "tool_call",
-          call: { id: callId, name: "", args: {} },
+          call: { id: callId, name: content.name || "", args: {} },
         });
         idx = ai.content_blocks.length - 1;
       }
       const call = ai.content_blocks[idx].call;
-      if (typeof content === "string") {
-        argsBuffer[callId] = (argsBuffer[callId] || "") + content;
+      if (content.name && !call.name) call.name = content.name;
+      if ("args_delta" in content) {
+        argsBuffer[callId] = (argsBuffer[callId] || "") + content.args_delta;
         try { call.args = JSON.parse(argsBuffer[callId]); } catch {}
-      } else {
-        Object.assign(call, content);
+      } else if ("args" in content) {
+        call.args = content.args;
       }
       ai.liveKey = { kind: "block", index: idx };
     }

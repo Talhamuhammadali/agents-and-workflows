@@ -26,12 +26,18 @@ async def agent_node(state: ReactAgentState, config: RunnableConfig, runtime: Ru
         ai_message: AIMessageChunk | None = None
 
         async for chunk in llm.astream([system_message, *messages]):
+
             if not isinstance(chunk, AIMessageChunk):
                 continue
+
             if isinstance(chunk.content, str):
-                # Patch for gemini-2.5-pro
-                print("[agent_node] Received str chunk content from LLM")
-                print(len(ai_message.content_blocks) if ai_message and ai_message.content_blocks else 0)
+                # gemini 2.5 patch
+                if (
+                    chunk.response_metadata.get("stop_reason") in ["end_turn", "tool_use"] or chunk.chunk_position == "last"
+                ):
+                    continue
+                
+                print(f"[agent_node] Received str text chunk: {chunk}")
                 last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
                 if last_block:
                     new_block = {**last_block}
