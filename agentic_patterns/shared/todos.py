@@ -10,7 +10,7 @@ from agentic_patterns.shared.prompts.todo_prompts import UPDATE_TODOS_DESCRIPTIO
 
 @tool(name_or_callable="update_todos", description=UPDATE_TODOS_DESCRIPTION)
 def update_todos(todos: list[dict], tool_runtime: ToolRuntime) -> Command:
-    """Replaces state.todos with the provided list. Each todo: {id, task, completed}."""
+    """Replaces state.todos with the provided list. Each todo: {id, task, status}."""
     return Command(
         update={
             "todos": todos,

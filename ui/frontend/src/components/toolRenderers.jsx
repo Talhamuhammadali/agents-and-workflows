@@ -6,7 +6,7 @@
 // To add a new tool: write a component and add it to the `renderers` map
 // at the bottom. Unknown tools fall back to the raw JSON view.
 
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 function Section({ label, children }) {
   return (
@@ -85,16 +85,21 @@ function UpdateTodosView({ args }) {
   return (
     <Section label={`${todos.length} todos`}>
       <div className="todo-preview">
-        {todos.map((t) => (
-          <div key={t.id} className={`todo-preview-item ${t.completed ? "done" : ""}`}>
-            {t.completed ? (
-              <CheckCircle2 size={12} className="todo-icon done" />
-            ) : (
-              <Circle size={12} className="todo-icon" />
-            )}
-            <span>{t.task}</span>
-          </div>
-        ))}
+        {todos.map((t) => {
+          const status = t.status ?? (t.completed ? "completed" : "pending");
+          return (
+            <div key={t.id} className={`todo-preview-item ${status}`}>
+              {status === "completed" ? (
+                <CheckCircle2 size={12} className="todo-icon completed" />
+              ) : status === "in_progress" ? (
+                <Loader2 size={12} className="todo-icon in_progress" />
+              ) : (
+                <Circle size={12} className="todo-icon" />
+              )}
+              <span>{t.task}</span>
+            </div>
+          );
+        })}
       </div>
     </Section>
   );

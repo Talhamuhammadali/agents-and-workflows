@@ -2,14 +2,17 @@
 
 - `chunk_to_events`    — live SSE streaming from agent.astream().
 - `messages_to_events` — rehydrate persisted BaseMessage[] from the checkpointer.
-- `sse_event_stream`   — async generator producing SSE-formatted strings for one turn.
+- `sse_event_stream`   — async generator producing SSE-formatted strings for one
+                         turn, with Redis-signalled interrupt support.
 
 All share `parent_run_id` as the outer merge key so the UI accumulator groups
 one agent turn into a single AI block. Tool results key on `tool_call_id` so
 the UI correlates each result back to its originating call.
 """
 
+import asyncio
 from collections.abc import AsyncIterator
+from contextlib import suppress
 from pathlib import Path
 
 from langchain_core.messages import (
@@ -29,6 +32,7 @@ from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
 from agentic_patterns.react_agent.state import ReactAgentContextSchema
 from ui.backend.event_helpers import ai_content_events, as_text, now_iso, tool_result_event
 from ui.backend.models import MessageResponse, MessageTypes
+from ui.backend.pubsub import listen_for_interrupt
 from ui.backend.thread_store import redis_url
 from utils.llms import Model
 
@@ -109,9 +113,20 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
 
 
 async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
-    """Run one agent turn and yield SSE-formatted MessageResponse events."""
+    """Streaming turn with Redis-signalled interrupt.
+
+    Producer task drains `agent.astream` into an `asyncio.Queue`. The SSE
+    generator body races `queue.get()` against a listener task subscribed to
+    `interrupt:{thread_id}`. On interrupt we cancel the producer, patch the
+    checkpointer state, and emit a final NOTIFICATION event.
+
+    Queue/producer split maps 1:1 to a future worker container: swap the
+    queue for a Redis Stream and the producer runs elsewhere.
+    """
     parent_run_id = f"run-{uuid7()}"
     workspace = Path("tests/workspaces/sandbox").resolve()
+    sentinel = object()
+
     async with AsyncRedisStore.from_conn_string(redis_url()) as store:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
@@ -120,17 +135,92 @@ async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
             context = ReactAgentContextSchema(
                 workspace=workspace,
                 agent_name="ReactAgent",
-                model=Model.VERTEX_CLAUDE.value,
+                model=Model.GPT.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
-            # track tool call chunks
             tc_index_to_id: dict[int, str] = {}
-            async for chunk in agent.astream(
-                {"message": message, "workspace": str(workspace)},
-                context=context,
-                config=config,
-                stream_mode=["custom"],
-                version="v2",
-            ):  # type: ignore[call-overload]
-                for event in chunk_to_events(chunk["data"], thread_id, parent_run_id, tc_index_to_id):
-                    yield f"data: {event.model_dump_json()}\n\n"
+            queue: asyncio.Queue = asyncio.Queue()
+
+            async def produce() -> None:
+                try:
+                    async for chunk in agent.astream(
+                        {"message": message, "workspace": str(workspace)},
+                        context=context,
+                        config=config,
+                        stream_mode=["custom"],
+                        version="v2",
+                    ):  # type: ignore[call-overload]
+                        await queue.put(chunk)
+                finally:
+                    await queue.put(sentinel)
+
+            producer = asyncio.create_task(produce())
+            listener = asyncio.create_task(listen_for_interrupt(thread_id))
+            interrupted = False
+
+            try:
+                while True:
+                    get_task = asyncio.create_task(queue.get())
+                    done, _ = await asyncio.wait(
+                        {get_task, listener}, return_when=asyncio.FIRST_COMPLETED
+                    )
+                    if listener in done:
+                        get_task.cancel()
+                        with suppress(asyncio.CancelledError):
+                            await get_task
+                        interrupted = True
+                        break
+                    chunk = get_task.result()
+                    if chunk is sentinel:
+                        break
+                    for event in chunk_to_events(chunk["data"], thread_id, parent_run_id, tc_index_to_id):
+                        yield f"data: {event.model_dump_json()}\n\n"
+            finally:
+                producer.cancel()
+                with suppress(asyncio.CancelledError):
+                    await producer
+                if not listener.done():
+                    listener.cancel()
+                    with suppress(asyncio.CancelledError):
+                        await listener
+
+            if interrupted:
+                await _patch_state_after_interrupt(agent, config)
+                yield f"data: {_interrupted_event(thread_id).model_dump_json()}\n\n"
+
+
+async def _patch_state_after_interrupt(agent, config: RunnableConfig) -> None:
+    """Repair checkpointer state after a mid-turn cancel.
+
+    Orphan tool_calls on the last AI message would 400 the next turn, so we
+    satisfy them with synthetic ToolMessage(s). A bare AI message gets its
+    content replaced via same-id write (the `add_messages` reducer merges on id).
+    """
+    snapshot = await agent.aget_state(config)
+    messages = snapshot.values.get("messages", []) if snapshot and snapshot.values else []
+    last = messages[-1] if messages else None
+    interrupt_message = "**--- INTERRUPTED ---**"
+    if isinstance(last, AIMessage) and last.tool_calls:
+        tool_msgs = [
+            ToolMessage(content=interrupt_message, tool_call_id=tc["id"], name=tc.get("name"))
+            for tc in last.tool_calls
+        ]
+        await agent.aupdate_state(config, {"messages": tool_msgs})
+    elif isinstance(last, AIMessage):
+        await agent.aupdate_state(config, {"messages": [AIMessage(content=interrupt_message, id=last.id)]})
+    else:
+        await agent.aupdate_state(config, {"messages": [AIMessage(content=interrupt_message)]})
+
+
+def _interrupted_event(thread_id: str) -> MessageResponse:
+    return MessageResponse(
+        id=f"interrupt-{uuid7()}",
+        thread_id=thread_id,
+        checkpoint_id=None,
+        message_type=MessageTypes.NOTIFICATION,
+        role_type="ai",
+        subtype="interrupted",
+        content="**--- INTERRUPTED ---**",
+        name=None,
+        timestamp=now_iso(),
+    )
