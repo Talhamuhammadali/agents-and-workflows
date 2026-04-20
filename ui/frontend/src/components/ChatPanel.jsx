@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, Plus, Send, X } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Maximize2, Minimize2, Pause, Plus, Send, X } from "lucide-react";
 import HumanMessage from "./HumanMessage";
 import AIMessage from "./AIMessage";
 import TodoSection from "./TodoSection";
@@ -13,6 +13,7 @@ export default function ChatPanel({
   messages,
   todos,
   onSend,
+  onInterrupt,
   sending,
   chatWidth,
   onChatWidthChange,
@@ -27,6 +28,20 @@ export default function ChatPanel({
     el.style.height = "";
     el.style.height = `${el.scrollHeight}px`;
   }, [input, expanded]);
+
+  // Esc interrupts the active stream. Global listener because the textarea is
+  // disabled during streaming and can't catch keys itself.
+  useEffect(() => {
+    if (!sending || !onInterrupt) return;
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onInterrupt();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sending, onInterrupt]);
 
   // Only render human and ai messages (tool messages are shown inside AIMessage)
   const visibleMessages = messages.filter(
@@ -134,7 +149,7 @@ export default function ChatPanel({
       <TodoSection todos={todos} />
 
       <div className="chat-input">
-        <div className="chat-textarea-wrap">
+        <div className="chat-input-card">
           <textarea
             ref={textareaRef}
             className={expanded ? "expanded" : ""}
@@ -150,18 +165,36 @@ export default function ChatPanel({
             }}
             disabled={sending}
           />
-          <button
-            type="button"
-            className="expand-btn"
-            onClick={() => setExpanded((v) => !v)}
-            title={expanded ? "Collapse" : "Expand"}
-          >
-            {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-          </button>
+          <div className="chat-input-actions">
+            <button
+              type="button"
+              className="expand-btn"
+              onClick={() => setExpanded((v) => !v)}
+              title={expanded ? "Collapse" : "Expand"}
+            >
+              {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+            <div className="chat-input-actions-right">
+              <button
+                type="button"
+                className="interrupt-btn"
+                onClick={onInterrupt}
+                disabled={!sending}
+                title="Stop (Esc)"
+              >
+                <Pause size={14} />
+              </button>
+              <button
+                className="send-btn"
+                onClick={submit}
+                disabled={sending || !input.trim()}
+                title="Send (Enter)"
+              >
+                <Send size={14} />
+              </button>
+            </div>
+          </div>
         </div>
-        <button className="send-btn" onClick={submit} disabled={sending || !input.trim()}>
-          <Send size={16} />
-        </button>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from ui.backend.models import CreateThreadRequest, StreamRequest, ThreadMeta
+from ui.backend.pubsub import publish_interrupt
 from ui.backend.stream import messages_to_events, sse_event_stream
 from ui.backend.thread_store import (
     create_thread,
@@ -77,3 +78,12 @@ async def stream_reply(thread_id: str, body: StreamRequest) -> StreamingResponse
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "connection": "keep-alive"},
     )
+
+
+@app.post("/api/threads/{thread_id}/interrupt")
+async def interrupt_thread(thread_id: str) -> dict:
+    """Signal the active stream for this thread to stop. Returns subscriber count."""
+    if not thread_id:
+        raise HTTPException(404, "Thread id not provided.")
+    reached = await publish_interrupt(thread_id)
+    return {"thread_id": thread_id, "reached": reached}

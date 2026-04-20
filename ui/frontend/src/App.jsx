@@ -134,6 +134,7 @@ export default function App() {
       }));
     }
 
+    let wasInterrupted = false;
     setSending(true);
     try {
       await streamPost(
@@ -141,6 +142,11 @@ export default function App() {
         { message },
         (ev) => {
           setBundle((prev) => ({ ...prev, events: [...prev.events, ev] }));
+
+          if (ev.message_type === "notification" && ev.subtype === "interrupted") {
+            wasInterrupted = true;
+            return;
+          }
 
           if (
             ev.role_type === "ai" &&
@@ -163,10 +169,23 @@ export default function App() {
         }
       );
       await refreshState();
+      if (wasInterrupted) {
+        const thread = await fetch(`/api/threads/${activeId}`).then((r) => r.json());
+        setBundle((prev) => ({ ...prev, events: thread.messages }));
+      }
     } catch (err) {
       console.error("Stream failed:", err);
     } finally {
       setSending(false);
+    }
+  }
+
+  async function handleInterrupt() {
+    if (!activeId || !sending) return;
+    try {
+      await fetch(`/api/threads/${activeId}/interrupt`, { method: "POST" });
+    } catch (err) {
+      console.error("Interrupt failed:", err);
     }
   }
 
@@ -197,6 +216,7 @@ export default function App() {
         messages={messages}
         todos={bundle.todos}
         onSend={handleSend}
+        onInterrupt={handleInterrupt}
         sending={sending}
         chatWidth={chatWidth}
         onChatWidthChange={setChatWidth}
