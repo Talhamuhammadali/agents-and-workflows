@@ -135,7 +135,7 @@ async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
             context = ReactAgentContextSchema(
                 workspace=workspace,
                 agent_name="ReactAgent",
-                model=Model.GPT.value,
+                model=Model.VERTEX_CLAUDE.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
             tc_index_to_id: dict[int, str] = {}

@@ -27,12 +27,15 @@ async def publish_interrupt(thread_id: str) -> int:
 async def listen_for_interrupt(thread_id: str) -> None:
     """Block until an interrupt arrives on this thread's channel, then return.
 
-    Intended to race against the agent stream task. On cancellation the
-    subscription is torn down cleanly by the async context managers.
+    Polls `get_message` instead of iterating `ps.listen()` — the latter holds
+    an inner async generator that doesn't unwind cleanly when the task is
+    cancelled mid-await, producing "aclose(): asynchronous generator is
+    already running" on stream teardown.
     """
     async with Redis.from_url(redis_url(), decode_responses=True) as r:
         async with r.pubsub() as ps:
             await ps.subscribe(_channel(thread_id))
-            async for msg in ps.listen():
-                if msg.get("type") == "message":
+            while True:
+                msg = await ps.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                if msg and msg.get("type") == "message":
                     return
