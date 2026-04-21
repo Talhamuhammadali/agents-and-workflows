@@ -26,6 +26,7 @@ from langchain_core.messages import (
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.redis import AsyncRedisSaver
 from langgraph.store.redis import AsyncRedisStore
+from langgraph.types import Command
 from uuid_utils import uuid7
 
 from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
@@ -33,7 +34,7 @@ from agentic_patterns.react_agent.state import ReactAgentContextSchema
 from ui.backend.event_helpers import ai_content_events, as_text, now_iso, tool_result_event
 from ui.backend.models import MessageResponse, MessageTypes
 from ui.backend.pubsub import listen_for_interrupt
-from ui.backend.thread_store import redis_url
+from ui.backend.thread_store import get_latest_snapshot, redis_url
 from utils.llms import Model
 
 
@@ -112,7 +113,7 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
     return events
 
 
-async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
+async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator[str]:
     """Streaming turn with Redis-signalled interrupt.
 
     Producer task drains `agent.astream` into an `asyncio.Queue`. The SSE
@@ -140,16 +141,19 @@ async def sse_event_stream(thread_id: str, message: str) -> AsyncIterator[str]:
             config = RunnableConfig(configurable={"thread_id": thread_id})
             tc_index_to_id: dict[int, str] = {}
             queue: asyncio.Queue = asyncio.Queue()
+            # finding pending interrupts before starting the producer
+            snapshot = await get_latest_snapshot(agent, config)
+            agent_inputs = {"context": context, "config": config, "version": "v2", "stream_mode": ["custom"]}
 
+            if snapshot and snapshot.interrupts:
+                print(f"Found pending interrupts for thread_id {thread_id}, using command input.")
+                agent_inputs["input"] = Command(resume=message)
+            else:
+                agent_inputs["input"] = {"message": message, "workspace": str(workspace)}
+            
             async def produce() -> None:
                 try:
-                    async for chunk in agent.astream(
-                        {"message": message, "workspace": str(workspace)},
-                        context=context,
-                        config=config,
-                        stream_mode=["custom"],
-                        version="v2",
-                    ):  # type: ignore[call-overload]
+                    async for chunk in agent.astream(**agent_inputs):  # type: ignore[call-overload]
                         await queue.put(chunk)
                 finally:
                     await queue.put(sentinel)

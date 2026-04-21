@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from ui.backend.models import CreateThreadRequest, StreamRequest, ThreadMeta
+from ui.backend.models import CreateThreadRequest, StreamRequest, ThreadHistoryResponse, ThreadMeta
 from ui.backend.pubsub import publish_interrupt
 from ui.backend.stream import messages_to_events, sse_event_stream
 from ui.backend.thread_store import (
@@ -41,16 +41,17 @@ async def remove_thread(thread_id: str) -> dict:
 
 
 @app.get("/api/threads/{thread_id}")
-async def get_thread(thread_id: str) -> dict:
-    """Load persisted messages for a thread and return them as MessageResponse[]."""
+async def get_thread(thread_id: str) -> ThreadHistoryResponse:
+    """Load persisted messages + pending interrupts for a thread."""
     state = await load_agent_state(thread_id)
-    events = messages_to_events(state.get("messages", []), thread_id)
-    return {
-        "thread_id": thread_id,
-        "title": "Chat",
-        "updated_at": None,
-        "messages": [e.model_dump() for e in events],
-    }
+    events = messages_to_events(state.values.get("messages", []), thread_id)
+    return ThreadHistoryResponse(
+        thread_id=thread_id,
+        title="Chat",
+        updated_at=None,
+        messages=events,
+        pending_interrupts=state.pending_interrupts,
+    )
 
 
 @app.get("/api/threads/{thread_id}/state")
@@ -59,8 +60,8 @@ async def get_thread_state(thread_id: str) -> dict:
     state = await load_agent_state(thread_id)
     return {
         "thread_id": thread_id,
-        "todos": state.get("todos", []),
-        "workspace": await list_workspace(state.get("workspace")),
+        "todos": state.values.get("todos", []),
+        "workspace": await list_workspace(state.values.get("workspace")),
         "artifact": None,
     }
 
@@ -68,10 +69,10 @@ async def get_thread_state(thread_id: str) -> dict:
 @app.post("/api/threads/{thread_id}/stream")
 async def stream_reply(thread_id: str, body: StreamRequest) -> StreamingResponse:
     """Stream an agent's response as SSE MessageResponse events."""
-    if not thread_id:
-        raise HTTPException(404, "Thread id not provided.")
-    if not body.message:
-        raise HTTPException(400, "Message not provided.")
+    if isinstance(body.message, str) and not body.message.strip():
+        raise HTTPException(400, "Message must be non-empty.")
+    if isinstance(body.message, dict) and not body.message:
+        raise HTTPException(400, "Resume map must contain at least one answer.")
 
     return StreamingResponse(
         sse_event_stream(thread_id, body.message),
@@ -83,7 +84,5 @@ async def stream_reply(thread_id: str, body: StreamRequest) -> StreamingResponse
 @app.post("/api/threads/{thread_id}/interrupt")
 async def interrupt_thread(thread_id: str) -> dict:
     """Signal the active stream for this thread to stop. Returns subscriber count."""
-    if not thread_id:
-        raise HTTPException(404, "Thread id not provided.")
     reached = await publish_interrupt(thread_id)
     return {"thread_id": thread_id, "reached": reached}

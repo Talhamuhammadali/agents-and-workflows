@@ -1,7 +1,7 @@
 """Models for the UI backend."""
 
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -30,10 +30,18 @@ class MessageResponse(BaseModel):
     timestamp: str
 
 
-class StreamRequest(BaseModel):
-    """Body for POST /api/threads/{thread_id}/stream."""
+class PendingInterrupt(BaseModel):
+    """A paused interrupt from the agent graph — surfaced for UI Q/A or approval blocks."""
 
-    message: str
+    id: str
+    value: Any  # always a list of Question dicts from ask_question today
+
+
+class AgentStateResponse(BaseModel):
+    """Extended state payload — checkpointer values plus any pending interrupts."""
+
+    values: dict
+    pending_interrupts: list[PendingInterrupt] = []
 
 
 class ThreadMeta(BaseModel):
@@ -41,7 +49,24 @@ class ThreadMeta(BaseModel):
 
     thread_id: str
     title: str
-    updated_at: str
+    updated_at: str | None = None
+
+
+class ThreadHistoryResponse(ThreadMeta):
+    """Body for GET /api/threads/{thread_id} — chat history + any paused interrupts."""
+
+    messages: list[MessageResponse] = []
+    pending_interrupts: list[PendingInterrupt] = []
+
+
+class StreamRequest(BaseModel):
+    """Body for POST /api/threads/{thread_id}/stream.
+
+    `message` is either a plain str (new user turn) or a dict keyed by interrupt id
+    with the answer as the value (resume map for pending interrupts).
+    """
+
+    message: str | dict
 
 
 class CreateThreadRequest(BaseModel):

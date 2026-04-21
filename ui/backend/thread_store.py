@@ -11,7 +11,6 @@ and fetched via `load_agent_state` / deleted via `delete_agent_thread`.
 import json
 import os
 from datetime import UTC, datetime
-from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.redis import AsyncRedisSaver
@@ -20,7 +19,7 @@ from redis.asyncio import Redis
 from uuid_utils import uuid7
 
 from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
-from ui.backend.models import ThreadMeta
+from ui.backend.models import AgentStateResponse, PendingInterrupt, ThreadMeta
 
 THREAD_INDEX_KEY = "ui:thread_ids"
 
@@ -38,16 +37,25 @@ def _now() -> tuple[str, int]:
     return dt.isoformat(), int(dt.timestamp() * 1000)
 
 
-async def load_agent_state(thread_id: str) -> dict[str, Any]:
-    """Fetch the latest checkpointer state for a thread. Returns {} if none."""
+async def get_latest_snapshot(agent, config: RunnableConfig):
+    """Return the head StateSnapshot for this thread, or None if there's no history."""
+    history = [snap async for snap in agent.aget_state_history(config)]
+    return history[0] if history else None
+
+
+async def load_agent_state(thread_id: str) -> AgentStateResponse:
+    """Fetch the latest checkpointer state + any pending interrupts for a thread."""
     async with AsyncRedisStore.from_conn_string(redis_url()) as store:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
             agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
             config = RunnableConfig(configurable={"thread_id": thread_id})
-            history = [snap async for snap in agent.aget_state_history(config)]
-            return dict(history[0].values) if history else {}
+            snapshot = await get_latest_snapshot(agent, config)
+            if not snapshot:
+                return AgentStateResponse(values={})
+            pending = [PendingInterrupt(id=i.id, value=i.value) for i in snapshot.interrupts]
+            return AgentStateResponse(values=dict(snapshot.values or {}), pending_interrupts=pending)
 
 
 async def delete_agent_thread(thread_id: str) -> None:
