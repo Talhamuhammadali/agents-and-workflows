@@ -135,7 +135,7 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
             agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
             context = ReactAgentContextSchema(
                 workspace=workspace,
-                agent_name="ReactAgent",
+                agent_name="Data Agent",
                 model=Model.VERTEX_CLAUDE.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
@@ -147,9 +147,12 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
 
             if snapshot and snapshot.interrupts:
                 print(f"Found pending interrupts for thread_id {thread_id}, using command input.")
-                agent_inputs["input"] = Command(resume=message)
+                agent_inputs["input"] = Command(resume=message
+                                                )
             else:
-                agent_inputs["input"] = {"message": message, "workspace": str(workspace)}
+                agent_inputs["input"] = {
+                    "message": message, "messages": [HumanMessage(content=message)], "workspace": str(workspace)
+                }
 
             # Accumulate AI chunks here so a mid-stream interrupt can inject to state
             partial_ai: AIMessageChunk | None = None

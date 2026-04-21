@@ -295,6 +295,7 @@
 /* Right-aligned human message bubble */
 .human-message {
   justify-content: flex-end;
+  align-items: center;
 }
 
 .human-bubble {
@@ -312,6 +313,11 @@
   color: var(--text);
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+.human-avatar {
+  background: var(--border);
+  color: var(--text-muted);
 }
 
 /* ========== Markdown ========== */
