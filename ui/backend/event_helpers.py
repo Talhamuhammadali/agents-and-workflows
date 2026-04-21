@@ -88,7 +88,22 @@ def ai_content_events(
                         timestamp=ts,
                     )
                 )
-            # 'reasoning' parts from Gemini are empty signature carriers — skip.
+            elif ptype == "reasoning" and part.get("summary"):
+                # GPT reasoning with 'summary' with list of reasoning summaries in 'text'
+                for summary in part.get("summary", []):
+                    events.append(
+                        MessageResponse(
+                            id=parent_run_id,
+                            thread_id=thread_id,
+                            checkpoint_id=None,
+                            message_type=MessageTypes.REASONING,
+                            role_type="ai",
+                            subtype=part["type"],
+                            content=summary.get("text", "Thinking..."),
+                            name=name,
+                            timestamp=ts,
+                        )
+                    )
 
     for tc in tool_call_chunks or []:
         idx = tc.get("index")
