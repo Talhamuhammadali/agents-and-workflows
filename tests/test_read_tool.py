@@ -160,7 +160,7 @@ class TestReadTokenLimit:
 
     @pytest.mark.asyncio
     async def test_file_too_large(self):
-        """File exceeding 20k tokens → error with grep_search guidance."""
+        """File exceeding 20k tokens → error with Grep guidance."""
         fs = FileSystem(str(SANDBOX))
         large_content = "x" * 100_000  # ~25k tokens
         try:
@@ -169,7 +169,7 @@ class TestReadTokenLimit:
             result = await read_file.coroutine(tool_runtime=rt, path="large_file.txt")
             content = extract_content(result)
             assert "too large" in content.lower()
-            assert "grep_search" in content
+            assert "Grep" in content
         finally:
             (SANDBOX / "large_file.txt").unlink(missing_ok=True)
 

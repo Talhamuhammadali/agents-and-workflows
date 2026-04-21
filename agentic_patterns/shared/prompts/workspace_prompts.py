@@ -9,7 +9,7 @@ READ_FILE_DESCRIPTION = (
     "Parameters:\n"
     "  - path (str): Relative path to the file within the workspace (e.g. 'src/main.py').\n"
     "  - offset (int, optional): 1-indexed line to start reading from — matches the "
-    "line numbers shown by grep_search and read_file's cat -n output. Defaults to 1.\n"
+    "line numbers shown by Grep and read_file's cat -n output. Defaults to 1.\n"
     "  - limit (int, optional): Maximum number of lines to read. Defaults to 2000.\n"
     "  - force (bool, optional): If true, always returns full content. Defaults to false."
 )

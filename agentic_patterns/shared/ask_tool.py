@@ -23,7 +23,7 @@ def _with_open_ended(q: Question) -> dict:
     return data
 
 
-@tool("ask_question", description=ASK_TOOL_DESCRIPTION)
+@tool("Ask", description=ASK_TOOL_DESCRIPTION)
 async def ask_question(questions: list[Question], tool_runtime: ToolRuntime) -> Command:
     """Post questions to the user and return their answer as the tool result."""
     response = interrupt([_with_open_ended(q) for q in questions])

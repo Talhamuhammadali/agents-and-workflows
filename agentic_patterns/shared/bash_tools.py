@@ -61,7 +61,7 @@ async def bash(command: str, tool_runtime: ToolRuntime, timeout: int = 120) -> C
     return tool_reply(tool_runtime, "bash_success", output=output)
 
 
-@tool(name_or_callable="grep_search", description=GREP_SEARCH_DESCRIPTION)
+@tool(name_or_callable="Grep", description=GREP_SEARCH_DESCRIPTION)
 async def grep_search(
     pattern: str,
     tool_runtime: ToolRuntime,
@@ -115,7 +115,7 @@ async def grep_search(
     return tool_reply(tool_runtime, "bash_success", output=output)
 
 
-@tool(name_or_callable="glob_search", description=GLOB_SEARCH_DESCRIPTION)
+@tool(name_or_callable="Glob", description=GLOB_SEARCH_DESCRIPTION)
 async def glob_search(
     pattern: str,
     tool_runtime: ToolRuntime,

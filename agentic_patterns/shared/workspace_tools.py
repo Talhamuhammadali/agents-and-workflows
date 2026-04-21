@@ -34,7 +34,7 @@ from agentic_patterns.shared.prompts.workspace_prompts import (
 MAX_READ_TOKENS = 20_000
 
 
-@tool(name_or_callable="write_file", description=WRITE_FILE_DESCRIPTION)
+@tool(name_or_callable="Write", description=WRITE_FILE_DESCRIPTION)
 async def write_file(path: str, content: str, tool_runtime: ToolRuntime) -> Command:
     """Create or overwrite a file in the workspace."""
     fs = get_filesystem(tool_runtime)
@@ -49,7 +49,7 @@ async def write_file(path: str, content: str, tool_runtime: ToolRuntime) -> Comm
         return tool_reply(tool_runtime, "write_error_permission", path=path)
 
 
-@tool(name_or_callable="edit_file", description=EDIT_FILE_DESCRIPTION)
+@tool(name_or_callable="Edit", description=EDIT_FILE_DESCRIPTION)
 async def edit_file(
     path: str,
     old_string: str,
@@ -78,7 +78,7 @@ async def edit_file(
     return tool_reply(tool_runtime, "edit_success", path=path, diff=diff)
 
 
-@tool(name_or_callable="read_file", description=READ_FILE_DESCRIPTION)
+@tool(name_or_callable="Read", description=READ_FILE_DESCRIPTION)
 async def read_file(
     tool_runtime: ToolRuntime,
     path: str,

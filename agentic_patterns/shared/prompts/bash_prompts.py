@@ -33,7 +33,7 @@ GREP_SEARCH_DESCRIPTION = (
     "  - head_limit (int, optional): Maximum results to return. Defaults to 250.\n"
     "  - offset (int, optional): Skip the first N matches before collecting results.\n"
     "Notes:\n"
-    "  - Prefer grep_search over `bash rg/grep` — it runs in-process with workspace sandboxing.\n"
+    "  - Prefer Grep over `bash rg/grep` — it runs in-process with workspace sandboxing.\n"
     "  - Use 'files_with_matches' first to locate files, then 'content' to inspect hits."
 )
 
@@ -46,5 +46,5 @@ GLOB_SEARCH_DESCRIPTION = (
     "  - limit (int, optional): Maximum number of paths to return. Defaults to 200.\n"
     "Notes:\n"
     "  - Paths are returned relative to the workspace root.\n"
-    "  - Prefer glob_search over `bash find` — it runs in-process with workspace sandboxing."
+    "  - Prefer Glob over `bash find` — it runs in-process with workspace sandboxing."
 )

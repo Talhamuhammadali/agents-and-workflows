@@ -22,7 +22,7 @@ READ_SUCCESS = "{content}"
 READ_UNCHANGED = "{prefix} File unchanged since last read: {path}. Use that as it is still valid."
 READ_ERROR_TOO_LARGE = (
     "{prefix} Error: File too large (~{token_count} tokens) for '{path}'. "
-    "Use grep_search to find relevant lines, then read_file with offset/limit for a windowed read."
+    "Use Grep to find relevant lines, then read_file with offset/limit for a windowed read."
 )
 READ_ERROR_NOT_FOUND = "{prefix} Error: File not found: {path}"
 READ_ERROR_PERMISSION = "{prefix} Error: Permission denied — path '{path}' escapes the workspace."
