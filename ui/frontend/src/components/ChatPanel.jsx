@@ -3,6 +3,7 @@ import { Maximize2, Minimize2, Pause, Plus, Send, X } from "lucide-react";
 import HumanMessage from "./HumanMessage";
 import AIMessage from "./AIMessage";
 import TodoSection from "./TodoSection";
+import QuestionCard from "./QuestionCard";
 
 export default function ChatPanel({
   threads,
@@ -12,12 +13,14 @@ export default function ChatPanel({
   onDeleteThread,
   messages,
   todos,
+  pendingInterrupts,
   onSend,
   onInterrupt,
   sending,
   chatWidth,
   onChatWidthChange,
 }) {
+  const hasPending = (pendingInterrupts?.length ?? 0) > 0;
   const [input, setInput] = useState("");
   const [expanded, setExpanded] = useState(false);
   const textareaRef = useRef(null);
@@ -149,52 +152,59 @@ export default function ChatPanel({
       <TodoSection todos={todos} />
 
       <div className="chat-input">
-        <div className="chat-input-card">
-          <textarea
-            ref={textareaRef}
-            className={expanded ? "expanded" : ""}
-            rows={1}
-            placeholder={sending ? "Streaming…" : "Type a message... (Shift+Enter for new line)"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            disabled={sending}
+        {hasPending ? (
+          <QuestionCard
+            pendingInterrupts={pendingInterrupts}
+            onSubmit={(resumeMap) => onSend(resumeMap)}
           />
-          <div className="chat-input-actions">
-            <button
-              type="button"
-              className="expand-btn"
-              onClick={() => setExpanded((v) => !v)}
-              title={expanded ? "Collapse" : "Expand"}
-            >
-              {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-            </button>
-            <div className="chat-input-actions-right">
+        ) : (
+          <div className="chat-input-card">
+            <textarea
+              ref={textareaRef}
+              className={expanded ? "expanded" : ""}
+              rows={1}
+              placeholder={sending ? "Streaming…" : "Type a message... (Shift+Enter for new line)"}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                }
+              }}
+              disabled={sending}
+            />
+            <div className="chat-input-actions">
               <button
                 type="button"
-                className="interrupt-btn"
-                onClick={onInterrupt}
-                disabled={!sending}
-                title="Stop (Esc)"
+                className="expand-btn"
+                onClick={() => setExpanded((v) => !v)}
+                title={expanded ? "Collapse" : "Expand"}
               >
-                <Pause size={14} />
+                {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
-              <button
-                className="send-btn"
-                onClick={submit}
-                disabled={sending || !input.trim()}
-                title="Send (Enter)"
-              >
-                <Send size={14} />
-              </button>
+              <div className="chat-input-actions-right">
+                <button
+                  type="button"
+                  className="interrupt-btn"
+                  onClick={onInterrupt}
+                  disabled={!sending}
+                  title="Stop (Esc)"
+                >
+                  <Pause size={14} />
+                </button>
+                <button
+                  className="send-btn"
+                  onClick={submit}
+                  disabled={sending || !input.trim()}
+                  title="Send (Enter)"
+                >
+                  <Send size={14} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

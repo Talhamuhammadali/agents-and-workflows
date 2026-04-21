@@ -6,7 +6,7 @@ import ArtifactPanel from "./components/ArtifactPanel";
 import ChatPanel from "./components/ChatPanel";
 import "./App.css";
 
-const EMPTY_BUNDLE = { events: [], todos: [], workspace: [], artifact: null };
+const EMPTY_BUNDLE = { events: [], todos: [], workspace: [], artifact: null, pendingInterrupts: [] };
 
 async function createThread(title) {
   const res = await fetch("/api/threads", {
@@ -93,14 +93,17 @@ export default function App() {
           todos: state.todos,
           workspace: state.workspace,
           artifact: state.artifact,
+          pendingInterrupts: thread.pending_interrupts ?? [],
         })
       )
       .catch((err) => console.error("Failed to load thread:", err));
   }, [activeId]);
 
   async function handleSend(message) {
-    // Stream only emits AI/tool events — add the human turn optimistically so
-    // the user's message is visible immediately and survives through the turn.
+    // message is either a string (new user turn) or a resume map dict
+    // (answers keyed by interrupt id). Render the text equivalent optimistically.
+    const isResume = typeof message === "object" && message !== null;
+    const optimisticText = isResume ? Object.values(message).join("\n\n") : message;
     const humanEvent = {
       id: `local-${Date.now()}`,
       thread_id: activeId,
@@ -108,11 +111,15 @@ export default function App() {
       message_type: "text",
       role_type: "human",
       subtype: null,
-      content: message,
+      content: optimisticText,
       name: null,
       timestamp: new Date().toISOString(),
     };
-    setBundle((prev) => ({ ...prev, events: [...prev.events, humanEvent] }));
+    setBundle((prev) => ({
+      ...prev,
+      events: [...prev.events, humanEvent],
+      pendingInterrupts: isResume ? [] : prev.pendingInterrupts,
+    }));
 
     // These tools return Command(update=...) and never emit a tool_result on
     // the custom stream — so we detect completion via the LLM resuming after
@@ -169,10 +176,12 @@ export default function App() {
         }
       );
       await refreshState();
-      if (wasInterrupted) {
-        const thread = await fetch(`/api/threads/${activeId}`).then((r) => r.json());
-        setBundle((prev) => ({ ...prev, events: thread.messages }));
-      }
+      const thread = await fetch(`/api/threads/${activeId}`).then((r) => r.json());
+      setBundle((prev) => ({
+        ...prev,
+        events: wasInterrupted ? thread.messages : prev.events,
+        pendingInterrupts: thread.pending_interrupts ?? [],
+      }));
     } catch (err) {
       console.error("Stream failed:", err);
     } finally {
@@ -215,6 +224,7 @@ export default function App() {
         onDeleteThread={handleDeleteThread}
         messages={messages}
         todos={bundle.todos}
+        pendingInterrupts={bundle.pendingInterrupts}
         onSend={handleSend}
         onInterrupt={handleInterrupt}
         sending={sending}
