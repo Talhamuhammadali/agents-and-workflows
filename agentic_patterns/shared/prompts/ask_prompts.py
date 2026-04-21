@@ -8,11 +8,32 @@ There are two types of questions you can ask:
 - Multiple choice: Provide a list of options for the user to choose from with final option as open-ended auto injected.
 - Open-ended: Ask a question that allows the user to respond in their own words.
 
-The reponse will be a string with following format:
-Q1: <question>
-<user's answer or selected option>
-Q2: <question>
-<user's answer or selected option>
-...
 
+Example call:
+{
+  "questions": [
+    {
+      "question": "Which database should we target for the new pipeline?",
+      "options": ["Postgres", "BigQuery", "Snowflake"]
+    },
+    {
+      "question": "What's the refresh cadence?",
+      "options": ["Hourly", "Daily"]
+    },
+    {
+      "question": "Any retention constraints we should know about?"
+    }
+  ]
+}
+
+The response will be a string with the following format:
+
+Q1: Which database should we target for the new pipeline?
+Postgres
+
+Q2: What's the refresh cadence?
+Hourly
+
+Q3: Any retention constraints we should know about?
+Keep raw data for 90 days, aggregates forever.
 """
