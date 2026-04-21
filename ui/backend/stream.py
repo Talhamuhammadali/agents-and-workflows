@@ -150,10 +150,21 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
                 agent_inputs["input"] = Command(resume=message)
             else:
                 agent_inputs["input"] = {"message": message, "workspace": str(workspace)}
-            
+
+            # Accumulate AI chunks here so a mid-stream interrupt can inject to state
+            partial_ai: AIMessageChunk | None = None
+
             async def produce() -> None:
+                nonlocal partial_ai
                 try:
                     async for chunk in agent.astream(**agent_inputs):  # type: ignore[call-overload]
+                        data = chunk.get("data") if isinstance(chunk, dict) else None
+                        if isinstance(data, AIMessageChunk):
+                            # Reset on id change — each logical AI message owns its own accumulator.
+                            if partial_ai is None or data.id != partial_ai.id:
+                                partial_ai = data
+                            else:
+                                partial_ai = partial_ai + data
                         await queue.put(chunk)
                 finally:
                     await queue.put(sentinel)
@@ -189,16 +200,22 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
                         await listener
 
             if interrupted:
-                await _patch_state_after_interrupt(agent, config)
+                await _patch_state_after_interrupt(agent, config, partial_ai)
                 yield f"data: {_interrupted_event(thread_id).model_dump_json()}\n\n"
 
 
-async def _patch_state_after_interrupt(agent, config: RunnableConfig) -> None:
+async def _patch_state_after_interrupt(
+    agent,
+    config: RunnableConfig,
+    partial_ai: AIMessageChunk | None = None,
+) -> None:
     """Repair checkpointer state after a mid-turn cancel.
 
     Orphan tool_calls on the last AI message would 400 the next turn, so we
     satisfy them with synthetic ToolMessage(s). A bare AI message gets its
     content replaced via same-id write (the `add_messages` reducer merges on id).
+    If nothing was committed yet (mid-stream cancel), commit the partial text —
+    drop tool_call_chunks so malformed calls don't break the next turn.
     """
     snapshot = await agent.aget_state(config)
     messages = snapshot.values.get("messages", []) if snapshot and snapshot.values else []
@@ -212,6 +229,17 @@ async def _patch_state_after_interrupt(agent, config: RunnableConfig) -> None:
         await agent.aupdate_state(config, {"messages": tool_msgs})
     elif isinstance(last, AIMessage):
         await agent.aupdate_state(config, {"messages": [AIMessage(content=interrupt_message, id=last.id)]})
+    elif partial_ai and partial_ai.content:
+        # Drop tool_use (would orphan and 400 next turn); append marker to last text block.
+        partial_ai.content = [b for b in partial_ai.content if b.get("type") != "tool_use"]
+        for b in reversed(partial_ai.content):
+            if b.get("type") == "text":
+                b["text"] = f"{b.get('text', '')}\n\n{interrupt_message}"
+                break
+        else:
+            partial_ai.content.append({"type": "text", "text": interrupt_message})
+        partial_ai.tool_call_chunks = []
+        await agent.aupdate_state(config, {"messages": [partial_ai]})
     else:
         await agent.aupdate_state(config, {"messages": [AIMessage(content=interrupt_message)]})
 
