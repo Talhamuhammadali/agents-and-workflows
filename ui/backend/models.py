@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
+from utils.llms import Model
+
 
 class MessageTypes(StrEnum):
     """Message types for streaming LLM responses and history api."""
@@ -67,6 +69,7 @@ class StreamRequest(BaseModel):
     """
 
     message: str | dict
+    model: Model = Model.VERTEX_CLAUDE
 
 
 class CreateThreadRequest(BaseModel):

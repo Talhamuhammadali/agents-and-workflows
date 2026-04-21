@@ -19,6 +19,7 @@ from ui.backend.thread_store import (
     load_agent_state,
 )
 from ui.backend.workspace import list_workspace
+from utils.llms import Model
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -75,10 +76,16 @@ async def stream_reply(thread_id: str, body: StreamRequest) -> StreamingResponse
         raise HTTPException(400, "Resume map must contain at least one answer.")
 
     return StreamingResponse(
-        sse_event_stream(thread_id, body.message),
+        sse_event_stream(thread_id, body.message, body.model),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "connection": "keep-alive"},
     )
+
+
+@app.get("/api/models")
+async def get_models() -> list[str]:
+    """List available model ids for the UI dropdown."""
+    return [m.value for m in Model]
 
 
 @app.post("/api/threads/{thread_id}/interrupt")

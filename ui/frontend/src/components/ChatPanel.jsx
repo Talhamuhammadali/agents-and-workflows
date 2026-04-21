@@ -4,6 +4,7 @@ import HumanMessage from "./HumanMessage";
 import AIMessage from "./AIMessage";
 import TodoSection from "./TodoSection";
 import QuestionCard from "./QuestionCard";
+import ModelSelect from "./ModelSelect";
 
 export default function ChatPanel({
   threads,
@@ -19,6 +20,9 @@ export default function ChatPanel({
   sending,
   chatWidth,
   onChatWidthChange,
+  models,
+  selectedModel,
+  onSelectModel,
 }) {
   const hasPending = (pendingInterrupts?.length ?? 0) > 0;
   const [input, setInput] = useState("");
@@ -183,6 +187,12 @@ export default function ChatPanel({
               >
                 {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
+              <ModelSelect
+                models={models}
+                value={selectedModel}
+                onChange={onSelectModel}
+                disabled={sending}
+              />
               <div className="chat-input-actions-right">
                 <button
                   type="button"

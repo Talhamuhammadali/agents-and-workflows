@@ -8,5 +8,11 @@ There are two types of questions you can ask:
 - Multiple choice: Provide a list of options for the user to choose from with final option as open-ended auto injected.
 - Open-ended: Ask a question that allows the user to respond in their own words.
 
+The reponse will be a string with following format:
+Q1: <question>
+<user's answer or selected option>
+Q2: <question>
+<user's answer or selected option>
+...
 
 """

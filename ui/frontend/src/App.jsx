@@ -24,6 +24,8 @@ export default function App() {
   const [bundle, setBundle] = useState(EMPTY_BUNDLE);
   const [sending, setSending] = useState(false);
   const [chatWidth, setChatWidth] = useState(420);
+  const [models, setModels] = useState([]);
+  const [selectedModel, setSelectedModel] = useState("");
 
   const messages = useMemo(() => accumulate(bundle.events), [bundle.events]);
   const didInit = useRef(false);
@@ -46,6 +48,13 @@ export default function App() {
         }
       })
       .catch((err) => console.error("Failed to load threads:", err));
+    fetch("/api/models")
+      .then((r) => r.json())
+      .then((ms) => {
+        setModels(ms);
+        if (ms.length) setSelectedModel(ms.includes("vertex-claude") ? "vertex-claude" : ms[0]);
+      })
+      .catch((err) => console.error("Failed to load models:", err));
   }, []);
 
   async function handleNewThread() {
@@ -146,7 +155,7 @@ export default function App() {
     try {
       await streamPost(
         `/api/threads/${activeId}/stream`,
-        { message },
+        { message, model: selectedModel },
         (ev) => {
           setBundle((prev) => ({ ...prev, events: [...prev.events, ev] }));
 
@@ -230,6 +239,9 @@ export default function App() {
         sending={sending}
         chatWidth={chatWidth}
         onChatWidthChange={setChatWidth}
+        models={models}
+        selectedModel={selectedModel}
+        onSelectModel={setSelectedModel}
       />
     </div>
   );

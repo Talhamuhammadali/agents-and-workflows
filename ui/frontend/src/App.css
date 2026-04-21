@@ -850,6 +850,75 @@
   opacity: 1;
 }
 
+.model-select {
+  position: relative;
+  display: inline-flex;
+}
+
+.model-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.model-select-trigger:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.model-select-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.model-select-value {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-select-menu {
+  position: fixed;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  list-style: none;
+  margin: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.model-select-option {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.model-select-option:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.model-select-option.selected {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .send-btn,
 .interrupt-btn {
   width: 32px;

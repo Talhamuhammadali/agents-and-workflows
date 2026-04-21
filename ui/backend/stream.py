@@ -113,7 +113,7 @@ def messages_to_events(messages: list[BaseMessage], thread_id: str) -> list[Mess
     return events
 
 
-async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator[str]:
+async def sse_event_stream(thread_id: str, message: str | dict, model: Model) -> AsyncIterator[str]:
     """Streaming turn with Redis-signalled interrupt.
 
     Producer task drains `agent.astream` into an `asyncio.Queue`. The SSE
@@ -136,7 +136,7 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
             context = ReactAgentContextSchema(
                 workspace=workspace,
                 agent_name="Data Agent",
-                model=Model.VERTEX_CLAUDE.value,
+                model=model.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
             tc_index_to_id: dict[int, str] = {}
@@ -163,8 +163,12 @@ async def sse_event_stream(thread_id: str, message: str | dict) -> AsyncIterator
                     async for chunk in agent.astream(**agent_inputs):  # type: ignore[call-overload]
                         data = chunk.get("data") if isinstance(chunk, dict) else None
                         if isinstance(data, AIMessageChunk):
-                            # Reset on id change — each logical AI message owns its own accumulator.
-                            if partial_ai is None or data.id != partial_ai.id:
+                            # Reset only when a *new* id starts. Some providers (e.g. OpenAI)
+                            # can emit continuation deltas with id=None — treat those as
+                            # part of the current message, not a new one.
+                            if partial_ai is None:
+                                partial_ai = data
+                            elif data.id and partial_ai.id and data.id != partial_ai.id:
                                 partial_ai = data
                             else:
                                 partial_ai = partial_ai + data
