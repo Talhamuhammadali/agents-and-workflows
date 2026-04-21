@@ -65,22 +65,15 @@ function ReadFileView({ args }) {
   );
 }
 
-function BashView({ args, result }) {
+function BashView({ args }) {
   return (
-    <>
-      <Section label="Command">
-        <Code>$ {args.command}</Code>
-      </Section>
-      {result && (
-        <Section label="Output">
-          <Code>{result.content}</Code>
-        </Section>
-      )}
-    </>
+    <Section label="Command">
+      <Code>$ {args.command}</Code>
+    </Section>
   );
 }
 
-function UpdateTodosView({ args }) {
+function TodosView({ args }) {
   const todos = args.todos || [];
   return (
     <Section label={`${todos.length} todos`}>
@@ -105,32 +98,34 @@ function UpdateTodosView({ args }) {
   );
 }
 
-function FallbackView({ args, result }) {
+function FallbackView({ args }) {
   return (
-    <>
-      <Section label="Input">
-        <Code>{JSON.stringify(args, null, 2)}</Code>
-      </Section>
-      {result && (
-        <Section label="Output">
-          <Code>{result.content}</Code>
-        </Section>
-      )}
-    </>
+    <Section label="Input">
+      <Code>{JSON.stringify(args, null, 2)}</Code>
+    </Section>
   );
 }
 
 // ---- Registry ----------------------------------------------------------
 
 const renderers = {
-  write_file: WriteFileView,
-  edit_file: EditFileView,
-  read_file: ReadFileView,
+  Write: WriteFileView,
+  Edit: EditFileView,
+  Read: ReadFileView,
   bash: BashView,
-  update_todos: UpdateTodosView,
+  Todos: TodosView,
 };
 
 export function renderToolCall(toolCall, toolResult) {
   const View = renderers[toolCall.name] || FallbackView;
-  return <View args={toolCall.args} result={toolResult} />;
+  return (
+    <>
+      <View args={toolCall.args} />
+      {toolResult && (
+        <Section label="Output">
+          <Code>{toolResult.content}</Code>
+        </Section>
+      )}
+    </>
+  );
 }

@@ -50,15 +50,10 @@ export default function ChatPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [sending, onInterrupt]);
 
-  // Only render human and ai messages (tool messages are shown inside AIMessage)
-  const visibleMessages = messages.filter(
-    (m) => m.type === "human" || m.type === "ai"
-  );
-
   // Index of the last AI message — used to auto-expand its live tool call.
   let lastAiIndex = -1;
-  for (let i = visibleMessages.length - 1; i >= 0; i--) {
-    if (visibleMessages[i].type === "ai") {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].type === "ai") {
       lastAiIndex = i;
       break;
     }
@@ -136,17 +131,17 @@ export default function ChatPanel({
       </div>
 
       <div className="chat-messages">
-        {visibleMessages.map((msg, i) => {
-          const originalIndex = messages.indexOf(msg);
-          if (msg.type === "human") {
-            return <HumanMessage key={i} message={msg} />;
-          }
+        {messages.map((msg, i) => {
+          if (msg.type === "human") return <HumanMessage key={i} message={msg} />;
+          // Tool results are rendered inline as the OUTPUT of their paired
+          // tool_call (see AIMessage.findToolResult), so skip them here.
+          if (msg.type === "tool") return null;
           return (
             <AIMessage
               key={i}
               message={msg}
               allMessages={messages}
-              messageIndex={originalIndex}
+              messageIndex={i}
               isLive={sending && i === lastAiIndex}
             />
           );

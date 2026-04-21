@@ -133,12 +133,7 @@ export default function App() {
     // These tools return Command(update=...) and never emit a tool_result on
     // the custom stream — so we detect completion via the LLM resuming after
     // ToolNode runs: the next AI text/reasoning event means state is committed.
-    const STATE_MUTATING = new Set([
-      "update_todos",
-      "write_file",
-      "edit_file",
-      "create_file",
-    ]);
+    const STATE_MUTATING = new Set(["Todos", "Write", "Edit"]);
     let pendingRefetch = false;
 
     async function refreshState() {

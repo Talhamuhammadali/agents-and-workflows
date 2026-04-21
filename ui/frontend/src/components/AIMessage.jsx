@@ -12,12 +12,13 @@ function Markdown({ children }) {
   );
 }
 
-// Find the matching tool result message for a given tool_call id
+// Walk forward from this AI message to find a tool result matching a call id.
+// Stops at the next human turn so results from later turns don't leak in.
 function findToolResult(toolCallId, allMessages, aiMessageIndex) {
   for (let i = aiMessageIndex + 1; i < allMessages.length; i++) {
     const msg = allMessages[i];
     if (msg.type === "tool" && msg.tool_call_id === toolCallId) return msg;
-    if (msg.type === "human") break; // stop at next human turn
+    if (msg.type === "human") break;
   }
   return null;
 }
@@ -56,11 +57,19 @@ function ToolCallGroup({ items, allMessages, messageIndex, liveBlockIndex, hasBl
     findToolResult(block.call.id, allMessages, messageIndex)
   );
   // A tool is "done" if its result arrived, OR the LLM resumed after this
-  // group (next block exists — Command-returning tools like update_todos
+  // group (next block exists — Command-returning tools like Todos
   // never emit a result), OR the turn itself has ended.
   const allComplete =
     results.every(Boolean) || hasBlocksAfter || !messageIsLive;
-  const count = items.length;
+
+  // Build "Read 1, Glob 2" — keep first-seen order so the summary
+  // matches the visual order of the list below.
+  const counts = new Map();
+  for (const { block } of items) {
+    const name = block.call.name || "tool";
+    counts.set(name, (counts.get(name) || 0) + 1);
+  }
+  const summary = Array.from(counts, ([name, n]) => (n > 1 ? `${name} ${n}` : name)).join(", ");
 
   const [open, setOpen] = useState(!allComplete);
   useEffect(() => {
@@ -73,9 +82,7 @@ function ToolCallGroup({ items, allMessages, messageIndex, liveBlockIndex, hasBl
         <ChevronRight size={14} className={`chevron ${open ? "open" : ""}`} />
         <Wrench size={13} className={`tool-icon ${!allComplete ? "live-icon" : ""}`} />
         <span className={!allComplete ? "live-label" : ""}>
-          {allComplete
-            ? `${count} tool call${count > 1 ? "s" : ""}`
-            : `Running ${count} tool${count > 1 ? "s" : ""}…`}
+          {allComplete ? summary : `Running ${summary}…`}
         </span>
       </button>
       {open && (
