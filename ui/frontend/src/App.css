@@ -605,7 +605,7 @@
   align-self: flex-start;
 }
 
-/* ========== Diff View (edit_file) ========== */
+/* ========== Diff View ========== */
 .diff {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -642,7 +642,7 @@
   width: 10px;
 }
 
-/* ========== Todo Preview (update_todos) ========== */
+/* ========== Todo Preview ========== */
 .todo-preview {
   background: var(--bg);
   border: 1px solid var(--border);

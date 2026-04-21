@@ -1,3 +1,5 @@
+import { parse as parsePartial, ALL as PARTIAL_ALL } from "partial-json";
+
 // Fold a flat MessageResponse[] (from the history API or SSE stream) into
 // the shape the UI already renders:
 //
@@ -88,7 +90,9 @@ export function accumulate(events) {
       if (content.name && !call.name) call.name = content.name;
       if ("args_delta" in content) {
         argsBuffer[callId] = (argsBuffer[callId] || "") + content.args_delta;
-        try { call.args = JSON.parse(argsBuffer[callId]); } catch {}
+        // Anthropic/GPT stream tool args as JSON deltas — use a lenient parser
+        // so in-progress string fields (e.g. Write's `content`) render live.
+        call.args = parsePartial(argsBuffer[callId], PARTIAL_ALL) ?? call.args;
       } else if ("args" in content) {
         call.args = content.args;
       }
