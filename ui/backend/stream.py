@@ -14,6 +14,7 @@ import asyncio
 from collections.abc import AsyncIterator
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from langchain_core.messages import (
     AIMessage,
@@ -125,7 +126,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
     queue for a Redis Stream and the producer runs elsewhere.
     """
     parent_run_id = f"run-{uuid7()}"
-    workspace = Path("tests/workspaces/sandbox").resolve()
+    workspace = Path("sandbox").resolve()
     sentinel = object()
 
     async with AsyncRedisStore.from_conn_string(redis_url()) as store:
@@ -147,11 +148,12 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
 
             if snapshot and snapshot.interrupts:
                 print(f"Found pending interrupts for thread_id {thread_id}, using command input.")
-                agent_inputs["input"] = Command(resume=message
-                                                )
+                agent_inputs["input"] = Command(resume=message)
             else:
                 agent_inputs["input"] = {
-                    "message": message, "messages": [HumanMessage(content=message)], "workspace": str(workspace)
+                    "message": message,
+                    "messages": [HumanMessage(content=message if isinstance(message, str) else [message])],
+                    "workspace": str(workspace),
                 }
 
             # Accumulate AI chunks here so a mid-stream interrupt can inject to state
@@ -183,9 +185,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
             try:
                 while True:
                     get_task = asyncio.create_task(queue.get())
-                    done, _ = await asyncio.wait(
-                        {get_task, listener}, return_when=asyncio.FIRST_COMPLETED
-                    )
+                    done, _ = await asyncio.wait({get_task, listener}, return_when=asyncio.FIRST_COMPLETED)
                     if listener in done:
                         get_task.cancel()
                         with suppress(asyncio.CancelledError):
@@ -212,7 +212,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
 
 
 async def _patch_state_after_interrupt(
-    agent,
+    agent: Any,
     config: RunnableConfig,
     partial_ai: AIMessageChunk | None = None,
 ) -> None:
@@ -230,21 +230,21 @@ async def _patch_state_after_interrupt(
     interrupt_message = "**--- INTERRUPTED ---**"
     if isinstance(last, AIMessage) and last.tool_calls:
         tool_msgs = [
-            ToolMessage(content=interrupt_message, tool_call_id=tc["id"], name=tc.get("name"))
-            for tc in last.tool_calls
+            ToolMessage(content=interrupt_message, tool_call_id=tc["id"], name=tc.get("name")) for tc in last.tool_calls
         ]
         await agent.aupdate_state(config, {"messages": tool_msgs})
     elif isinstance(last, AIMessage):
         await agent.aupdate_state(config, {"messages": [AIMessage(content=interrupt_message, id=last.id)]})
-    elif partial_ai and partial_ai.content:
+    elif partial_ai and isinstance(partial_ai.content, list):
         # Drop tool_use (would orphan and 400 next turn); append marker to last text block.
-        partial_ai.content = [b for b in partial_ai.content if b.get("type") != "tool_use"]
-        for b in reversed(partial_ai.content):
-            if b.get("type") == "text":
+        blocks: list[Any] = [b for b in partial_ai.content if not (isinstance(b, dict) and b.get("type") == "tool_use")]
+        for b in reversed(blocks):
+            if isinstance(b, dict) and b.get("type") == "text":
                 b["text"] = f"{b.get('text', '')}\n\n{interrupt_message}"
                 break
         else:
-            partial_ai.content.append({"type": "text", "text": interrupt_message})
+            blocks.append({"type": "text", "text": interrupt_message})
+        partial_ai.content = blocks
         partial_ai.tool_call_chunks = []
         await agent.aupdate_state(config, {"messages": [partial_ai]})
     else:

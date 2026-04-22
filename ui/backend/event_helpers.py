@@ -24,8 +24,8 @@ def as_text(content: Any) -> str:
 
 def ai_content_events(
     content: Any,
-    tool_calls: list[dict] | None,
-    tool_call_chunks: list[dict] | None,
+    tool_calls: list[Any] | None,
+    tool_call_chunks: list[Any] | None,
     thread_id: str,
     parent_run_id: str,
     ts: str,
