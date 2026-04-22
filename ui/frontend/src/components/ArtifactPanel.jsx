@@ -1,8 +1,7 @@
 import { FileCode, FileText } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import Editor from "@monaco-editor/react";
 
 function extOf(path) {
   const name = (path || "").split("/").pop() || "";
@@ -37,23 +36,21 @@ export default function ArtifactPanel({ artifact }) {
         </div>
       ) : (
         <div className="artifact-body">
-          <SyntaxHighlighter
-            // Prism resolves most extensions via its alias table (py, ts,
-            // sh, yml, rs, ...). Unknown ones fall back to plain text.
-            language={ext || "text"}
-            style={oneDark}
-            showLineNumbers
-            customStyle={{
-              margin: 0,
-              padding: 0,
-              background: "transparent",
-              fontSize: "var(--text-base)",
+          <Editor
+            height="100%"
+            path={artifact.title}
+            value={artifact.content || ""}
+            theme="vs-dark"
+            options={{
+              readOnly: true,
+              minimap: { enabled: false },
+              wordWrap: "off",
+              scrollBeyondLastLine: false,
+              fontSize: 13,
               fontFamily: "var(--font-mono)",
+              lineNumbers: "on",
             }}
-            codeTagProps={{ style: { fontFamily: "var(--font-mono)" } }}
-          >
-            {artifact.content || ""}
-          </SyntaxHighlighter>
+          />
         </div>
       )}
     </div>

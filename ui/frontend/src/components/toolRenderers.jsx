@@ -8,10 +8,10 @@
 
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 
-function Section({ label, children }) {
+function Section({ label, children, preserveCase = false }) {
   return (
     <div className="tool-detail-section">
-      <span className="tool-detail-label">{label}</span>
+      <span className={`tool-detail-label${preserveCase ? " preserve-case" : ""}`}>{label}</span>
       {children}
     </div>
   );
@@ -26,7 +26,7 @@ function Code({ children }) {
 function WriteFileView({ args }) {
   return (
     <>
-      <Section label={args.path}>
+      <Section label={args.path} preserveCase>
         <Code>{args.content}</Code>
       </Section>
     </>
@@ -37,7 +37,7 @@ function EditFileView({ args }) {
   const oldLines = (args.old_string || "").split("\n");
   const newLines = (args.new_string || "").split("\n");
   return (
-    <Section label={args.path}>
+    <Section label={args.path} preserveCase>
       <div className="diff">
         {oldLines.map((line, i) => (
           <div key={`o-${i}`} className="diff-line diff-remove">

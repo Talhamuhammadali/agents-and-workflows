@@ -579,6 +579,13 @@
   color: var(--text-dim);
 }
 
+.tool-detail-label.preserve-case {
+  text-transform: none;
+  letter-spacing: normal;
+  word-break: break-all;
+  white-space: normal;
+}
+
 .tool-call-details pre {
   background: var(--bg);
   border: 1px solid var(--border);
