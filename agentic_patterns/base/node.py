@@ -24,9 +24,6 @@ async def agent_node(state: State, config: RunnableConfig, runtime: Runtime[Cont
     """Shared inference loop — identical for every agent."""
     try:
         print("====> [agent_node] <====")
-        # Both ``message`` and ``messages`` are required on BaseAgentState, so
-        # direct indexing keeps the right concrete types (TypedDict.get with a
-        # default widens to ``object`` under mypy).
         message: str = state["message"]
         messages: list[BaseMessage] = list(state["messages"])
         messages = pre_llm_processing(message, messages)
