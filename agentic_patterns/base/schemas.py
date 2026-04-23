@@ -15,6 +15,7 @@ class BaseAgentState(MessagesState):
     """Minimum state. Concrete agents extend with their own NotRequired fields."""
 
     message: str | dict
+    workspace: NotRequired[str]
     active_tools: NotRequired[list[str]]
 
 

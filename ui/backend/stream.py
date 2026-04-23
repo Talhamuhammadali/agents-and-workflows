@@ -158,6 +158,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
                 agent_inputs["input"] = dict(
                     BaseAgentState(
                         message=message,
+                        workspace=str(workspace),
                         messages=[HumanMessage(content=message if isinstance(message, str) else [message])],
                         active_tools=ESSENTIAL_TOOL_NAMES,
                     )
