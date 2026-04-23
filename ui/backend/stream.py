@@ -30,9 +30,11 @@ from langgraph.store.redis import AsyncRedisStore
 from langgraph.types import Command
 from uuid_utils import uuid7
 
+from agentic_patterns.base import BaseAgentState
 from agentic_patterns.data_agent_v2.agent import DATA_AGENT_V2_BUILDER
 from agentic_patterns.data_agent_v2.prompts import DATA_AGENT_V2_SYSTEM_PROMPT
 from agentic_patterns.data_agent_v2.state import DataAgentContext
+from agentic_patterns.shared import ESSENTIAL_TOOL_NAMES
 from ui.backend.event_helpers import ai_content_events, as_text, now_iso, tool_result_event
 from ui.backend.models import MessageResponse, MessageTypes
 from ui.backend.pubsub import listen_for_interrupt
@@ -139,6 +141,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
                 workspace=workspace,
                 system_prompt=DATA_AGENT_V2_SYSTEM_PROMPT,
                 agent_name="Data Agent",
+                available_skills=["fileops"],
                 model=model.value,
             )
             config = RunnableConfig(configurable={"thread_id": thread_id})
@@ -152,11 +155,13 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
                 print(f"Found pending interrupts for thread_id {thread_id}, using command input.")
                 agent_inputs["input"] = Command(resume=message)
             else:
-                agent_inputs["input"] = {
-                    "message": message,
-                    "messages": [HumanMessage(content=message if isinstance(message, str) else [message])],
-                    "workspace": str(workspace),
-                }
+                agent_inputs["input"] = dict(
+                    BaseAgentState(
+                        message=message,
+                        messages=[HumanMessage(content=message if isinstance(message, str) else [message])],
+                        active_tools=ESSENTIAL_TOOL_NAMES,
+                    )
+                )
 
             # Accumulate AI chunks here so a mid-stream interrupt can inject to state
             partial_ai: AIMessageChunk | None = None

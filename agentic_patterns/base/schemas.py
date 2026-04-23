@@ -14,7 +14,7 @@ from langgraph.graph import MessagesState
 class BaseAgentState(MessagesState):
     """Minimum state. Concrete agents extend with their own NotRequired fields."""
 
-    message: str
+    message: str | dict
     active_tools: NotRequired[list[str]]
 
 

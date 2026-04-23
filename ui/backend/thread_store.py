@@ -14,11 +14,14 @@ from datetime import UTC, datetime
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.redis import AsyncRedisSaver
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.redis import AsyncRedisStore
+from langgraph.types import StateSnapshot
 from redis.asyncio import Redis
 from uuid_utils import uuid7
 
-from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
+from agentic_patterns.base.schemas import Context, State
+from agentic_patterns.data_agent_v2.agent import DATA_AGENT_V2_BUILDER
 from ui.backend.models import AgentStateResponse, PendingInterrupt, ThreadMeta
 
 THREAD_INDEX_KEY = "ui:thread_ids"
@@ -37,7 +40,9 @@ def _now() -> tuple[str, int]:
     return dt.isoformat(), int(dt.timestamp() * 1000)
 
 
-async def get_latest_snapshot(agent, config: RunnableConfig):
+async def get_latest_snapshot(
+    agent: CompiledStateGraph[State, Context, State, State], config: RunnableConfig
+) -> StateSnapshot | None:
     """Return the head StateSnapshot for this thread, or None if there's no history."""
     history = [snap async for snap in agent.aget_state_history(config)]
     return history[0] if history else None
@@ -49,7 +54,7 @@ async def load_agent_state(thread_id: str) -> AgentStateResponse:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
-            agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
+            agent = DATA_AGENT_V2_BUILDER.compile(store=store, checkpointer=ch)
             config = RunnableConfig(configurable={"thread_id": thread_id})
             snapshot = await get_latest_snapshot(agent, config)
             if not snapshot:
