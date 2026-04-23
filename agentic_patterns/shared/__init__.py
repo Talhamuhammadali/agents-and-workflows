@@ -3,6 +3,16 @@
 from agentic_patterns.shared.ask_tool import ask_question
 from agentic_patterns.shared.bash_tools import BASH_TOOLS, bash, glob_search, grep_search
 from agentic_patterns.shared.helper import get_filesystem, handle_message, pre_llm_processing
+from agentic_patterns.shared.skill_registry import (
+    ESSENTIAL_TOOL_NAMES,
+    LIBRARY_DIR,
+    SKILLS,
+    TOOLS_BY_NAME,
+    Skill,
+    register,
+    resolve,
+)
+from agentic_patterns.shared.skill_tool import read_skill
 from agentic_patterns.shared.todos import update_todos
 from agentic_patterns.shared.workspace_tools import FILE_TOOLS, edit_file, read_file, write_file
 
@@ -20,4 +30,13 @@ __all__ = [
     "glob_search",
     "BASH_TOOLS",
     "ask_question",
+    # skill subsystem
+    "read_skill",
+    "Skill",
+    "SKILLS",
+    "TOOLS_BY_NAME",
+    "ESSENTIAL_TOOL_NAMES",
+    "LIBRARY_DIR",
+    "register",
+    "resolve",
 ]

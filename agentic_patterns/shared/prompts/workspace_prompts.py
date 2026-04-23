@@ -31,9 +31,9 @@ EDIT_FILE_DESCRIPTION = (
     "Parameters:\n"
     "  - path (str): Relative path to the file within the workspace (e.g. 'src/main.py').\n"
     "  - old_string (str): The exact text to find in the file. Must match exactly including "
-    "whitespace and indentation. Can span multiple lines.\n"
+    "whitespace and indentation.\n"
     "  - new_string (str): The text to replace it with.\n"
     "  - replace_all (bool, optional): If true, replaces all occurrences. Defaults to false.\n"
     "Note: If old_string appears multiple times and replace_all is false, the tool will error. "
-    "Provide more surrounding context to make the match unique, or set replace_all=true."
+    "Add enough context to make the string match unique, or set replace_all=true."
 )

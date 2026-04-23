@@ -30,8 +30,9 @@ from langgraph.store.redis import AsyncRedisStore
 from langgraph.types import Command
 from uuid_utils import uuid7
 
-from agentic_patterns.react_agent.agent import REACT_AGENT_BUILDER
-from agentic_patterns.react_agent.state import ReactAgentContextSchema
+from agentic_patterns.data_agent_v2.agent import DATA_AGENT_V2_BUILDER
+from agentic_patterns.data_agent_v2.prompts import DATA_AGENT_V2_SYSTEM_PROMPT
+from agentic_patterns.data_agent_v2.state import DataAgentContext
 from ui.backend.event_helpers import ai_content_events, as_text, now_iso, tool_result_event
 from ui.backend.models import MessageResponse, MessageTypes
 from ui.backend.pubsub import listen_for_interrupt
@@ -133,9 +134,10 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
-            agent = REACT_AGENT_BUILDER.compile(store=store, checkpointer=ch)
-            context = ReactAgentContextSchema(
+            agent = DATA_AGENT_V2_BUILDER.compile(store=store, checkpointer=ch)
+            context = DataAgentContext(
                 workspace=workspace,
+                system_prompt=DATA_AGENT_V2_SYSTEM_PROMPT,
                 agent_name="Data Agent",
                 model=model.value,
             )

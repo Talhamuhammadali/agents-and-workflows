@@ -8,11 +8,12 @@ from langgraph.types import Command
 
 from agentic_patterns.shared.prompts.ask_feedback import ASK_FEEDBACK
 from agentic_patterns.shared.prompts.bash_feedback import BASH_FEEDBACK
+from agentic_patterns.shared.prompts.skill_feedback import SKILL_FEEDBACK
 from agentic_patterns.shared.prompts.workspace_feedback import FILE_FEEDBACK, SYSTEM_PREFIX
 from helpers.filesystem import FileSystem
 
 _FILE_TOOL_NAMES = frozenset({"read_file", "write_file"})
-_FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK, **ASK_FEEDBACK}
+_FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK, **ASK_FEEDBACK, **SKILL_FEEDBACK}
 
 
 def feedback(key: str, **kwargs: Any) -> str:
@@ -75,6 +76,7 @@ def content_hash(content: str) -> str:
 def tool_reply(
     tool_runtime: ToolRuntime,
     key: str,
+    state_update: dict | None = None,
     extra_messages: list[BaseMessage] | None = None,
     response_metadata: dict | None = None,
     **kwargs: Any,
@@ -89,7 +91,7 @@ def tool_reply(
     ]
     if extra_messages:
         messages.extend(extra_messages)
-    return Command(update={"messages": messages})
+    return Command(update={"messages": messages, **(state_update or {})})
 
 
 def find_last_file_hash(path: str, messages: list[BaseMessage]) -> str | None:
