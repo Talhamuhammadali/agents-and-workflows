@@ -108,8 +108,8 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
             block_types.append(block_type)
         print(f"Block types in response: {block_types}")
         print(f"Full response usage metadata: {ai_message.usage_metadata}")
-        print("Full ai message: \n\n")
-        pprint(ai_message.model_dump(), indent=2)
+        # print("Full ai message: \n\n")
+        # pprint(ai_message.model_dump(), indent=2)
     except Exception as e:
         print(f"Error: {e}")
 

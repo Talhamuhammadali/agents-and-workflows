@@ -7,8 +7,8 @@ ANTHROPIC_CLAUDE_SONNET_4_6: dict[str, Any] = {
     "model": "claude-sonnet-4-6",
     "temperature": 1,
     "max_tokens": 64000,
-    "model_kwargs": {"thinking": {"type": "enabled", "budget_tokens": 10000}},
-    # "cache_control": {"type": "ephemeral"},
+    "thinking": {"type": "enabled", "budget_tokens": 10000},
+    "cache_control": {"type": "ephemeral"},
 }
 
 ANTHROPIC_CLAUDE_OPUS_4_7: dict[str, Any] = {
@@ -77,8 +77,8 @@ VERTEX_CLAUDE_SONNET_4_6: dict[str, Any] = {
     "model": "claude-sonnet-4-6",
     "temperature": 1,
     "max_tokens": 64000,
-    "model_kwargs": {"thinking": {"type": "enabled", "budget_tokens": 10000}},
-    # "cache_control": {"type": "ephemeral"},
+    "thinking": {"type": "enabled", "budget_tokens": 10000},
+    "cache_control": {"type": "ephemeral"},
 }
 
 VERTEX_CLAUDE_OPUS_4_7: dict[str, Any] = {
