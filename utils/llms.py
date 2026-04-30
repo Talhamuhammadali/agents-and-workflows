@@ -86,7 +86,9 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
     print(f"{'=' * 50}")
     try:
         ai_message = None
-        for chunk in llm.stream("Ultra think of something interesting to say. then write a creative essay"):
+        for chunk in llm.stream(
+            "Ultra think of something interesting to say. then write a creative essay after thinking."
+        ):
             # pprint(chunk, indent=2)
             ai_message = chunk if ai_message is None else ai_message + chunk
 
