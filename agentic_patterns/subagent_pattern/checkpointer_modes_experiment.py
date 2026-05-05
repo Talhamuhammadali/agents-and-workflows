@@ -128,7 +128,9 @@ def make_subagents(mode: Mode, sub_saver: AsyncRedisSaver) -> tuple[Any, Any]:
 
 def _sub_config(runtime: ToolRuntime, mode: Mode, suffix: str) -> RunnableConfig | None:
     if mode == "own_same_thread":
-        return runtime.config
+        configurable = runtime.config.get("configurable", {})
+        configurable["extra_tacking"] = "some-id"
+        return {"configurable": configurable}
     if mode == "own_new_thread":
         parent_thread_id = runtime.config["configurable"]["thread_id"]
         return {"configurable": {"thread_id": f"{parent_thread_id}-{suffix}"}}
