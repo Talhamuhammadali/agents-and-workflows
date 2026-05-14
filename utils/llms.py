@@ -48,6 +48,8 @@ vertex_claude_opus_4_7 = ChatAnthropicVertex(
     project="ekai-dev",
     location="global",
 )
+# Cortex models
+# cortext_claude_sonnet_4_5 = ChatSnowflake(**CORTEXT_CLAUDE_SONNET_4_5)
 
 
 class Model(StrEnum):
