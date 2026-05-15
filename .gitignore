@@ -212,3 +212,4 @@ __marimo__/
 .langgraph_api/
 .playwright-mcp
 sandbox/
+sf_auth.json

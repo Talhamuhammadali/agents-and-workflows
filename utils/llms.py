@@ -23,6 +23,7 @@ from configs.settings import (
     VERTEX_GEMINI_2_5_PRO,
     VERTEX_GEMINI_3_1_PRO,
 )
+from utils.snowflake import get_cortext_claude_sonnet_4_5
 
 load_dotenv()
 # Public API models
@@ -49,7 +50,7 @@ vertex_claude_opus_4_7 = ChatAnthropicVertex(
     location="global",
 )
 # Cortex models
-# cortext_claude_sonnet_4_5 = ChatSnowflake(**CORTEXT_CLAUDE_SONNET_4_5)
+cortext_claude_sonnet_4_5 = get_cortext_claude_sonnet_4_5()
 
 
 class Model(StrEnum):
@@ -64,6 +65,7 @@ class Model(StrEnum):
     VERTEX_GEMINI = "vertex-gemini"
     VERTEX_GEMINI_2_5 = "vertex-gemini-2.5"
     VERTEX_CLAUDE = "vertex-claude"
+    CORTEXT_CLAUDE_SONNET_4_5 = "cortext-claude-sonnet-4-5"
     VERTEX_CLAUDE_OPUS_4_7 = "vertex-claude-opus-4-7"
 
 
@@ -78,6 +80,7 @@ MODELS: dict[Model, BaseChatModel] = {
     Model.VERTEX_GEMINI_2_5: vertex_gemini_2_5_pro,
     Model.VERTEX_CLAUDE: vertex_claude_sonnet_4_6,
     Model.VERTEX_CLAUDE_OPUS_4_7: vertex_claude_opus_4_7,
+    Model.CORTEXT_CLAUDE_SONNET_4_5: cortext_claude_sonnet_4_5,
 }
 
 
@@ -89,7 +92,7 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
     try:
         ai_message = None
         for chunk in llm.stream(
-            "Ultra think of something interesting to say. then write a creative essay after thinking."
+            "Ultra think of an in depth fastapi main file. It should support in detail endpoints to manage a library."
         ):
             # pprint(chunk, indent=2)
             ai_message = chunk if ai_message is None else ai_message + chunk
@@ -119,10 +122,11 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
 # use uv run python -m utils.llms > utils/response_blocks.txt
 if __name__ == "__main__":
     TEST_LLMS = [
-        # Model.CLAUDE,
+        Model.CLAUDE,
         Model.CLAUDE_OPUS_4_7,
         Model.VERTEX_CLAUDE_OPUS_4_7,
         Model.VERTEX_CLAUDE,
+        # Model.CORTEXT_CLAUDE_SONNET_4_5,
     ]
     test_pairs = [(name.value, MODELS[name]) for name in TEST_LLMS]
     for name, llm in test_pairs:

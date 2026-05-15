@@ -91,9 +91,10 @@ VERTEX_CLAUDE_OPUS_4_7: dict[str, Any] = {
 }
 
 CORTEXT_CLAUDE_SONNET_4_5: dict[str, Any] = {
-    "model": "claude-sonnet-4-5",
+    "model": "claude-sonnet-4-6",
     "temperature": 1,
     "max_tokens": 64000,
-    "thinking": {"type": "enabled", "budget_tokens": 10000},
-    "cache_control": {"type": "ephemeral"},
+    "thinking": {"type": "adaptive"},
+    "output_config": {"effort": "high"},
+    # "cache_control": {"type": "ephemeral"}
 }
