@@ -1,0 +1,32 @@
+apiVersion: poc.local/v1alpha1
+kind: WorkloadPlan
+metadata:
+  name: test-good
+spec:
+  intent: provision
+  components:
+    - name: web
+      manifest:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: web
+        spec:
+          replicas: 2
+          selector:
+            matchLabels: { app: web }
+          template:
+            metadata:
+              labels: { app: web }
+            spec:
+              containers:
+                - name: web
+                  image: nginx:1.27
+    - name: web-config
+      manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: web-config
+        data:
+          APP_ENV: dev

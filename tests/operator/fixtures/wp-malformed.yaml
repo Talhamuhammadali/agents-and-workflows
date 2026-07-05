@@ -1,0 +1,10 @@
+apiVersion: poc.local/v1alpha1
+kind: WorkloadPlan
+metadata:
+  name: test-malformed
+spec:
+  intent: provision
+  components:
+    - name: broken
+      manifest:
+        replicas: 3

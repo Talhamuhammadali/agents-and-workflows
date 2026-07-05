@@ -1,0 +1,21 @@
+apiVersion: poc.local/v1alpha1
+kind: WorkloadPlan
+metadata:
+  name: test-dup
+spec:
+  intent: migrate
+  components:
+    - name: web
+      manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: a
+        data: { k: v1 }
+    - name: web
+      manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: b
+        data: { k: v2 }
