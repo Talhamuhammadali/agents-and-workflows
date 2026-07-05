@@ -72,7 +72,33 @@ class StreamRequest(BaseModel):
     model: Model = Model.VERTEX_CLAUDE
 
 
+class AwsCreds(BaseModel):
+    """AWS credentials for the source role, entered per thread in the UI."""
+
+    access_key_id: str
+    secret_access_key: str
+    region: str
+    session_token: str | None = None
+
+
+class ThreadConfig(BaseModel):
+    """Per-thread connection config, set at thread creation and reused each turn.
+
+    The target is either the local minikube (use_local_minikube) or a pasted
+    flattened kubeconfig for a remote cluster such as EKS (target_kubeconfig).
+    allow_bash unlocks the fileops skill so the agent can validate the CRD with
+    kubectl; leave it off for the structured-only surface.
+    """
+
+    aws: AwsCreds | None = None
+    use_local_minikube: bool = False
+    target_kubeconfig: str | None = None
+    target_namespace: str = "default"
+    allow_bash: bool = False
+
+
 class CreateThreadRequest(BaseModel):
     """Body for POST /api/threads — title is optional, defaults to 'New chat'."""
 
     title: str | None = None
+    config: ThreadConfig | None = None

@@ -32,7 +32,7 @@ async def get_threads() -> list[ThreadMeta]:
 
 @app.post("/api/threads")
 async def post_thread(body: CreateThreadRequest) -> ThreadMeta:
-    return await create_thread(body.title)
+    return await create_thread(body.title, body.config)
 
 
 @app.delete("/api/threads/{thread_id}")

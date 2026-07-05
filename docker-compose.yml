@@ -39,11 +39,14 @@ services:
     volumes:
       - .:/app
       - backend_venv:/app/.venv
+      - ${HOME}/.kube:/host/.kube:ro
+      - ${HOME}/.minikube:${HOME}/.minikube:ro
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - agents-net
+      - minikube
 
   frontend:
     build:
@@ -65,6 +68,8 @@ services:
 networks:
   agents-net:
     driver: bridge
+  minikube:
+    external: true
 
 volumes:
   redis_data:

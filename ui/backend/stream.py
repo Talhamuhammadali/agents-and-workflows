@@ -31,14 +31,12 @@ from langgraph.types import Command
 from uuid_utils import uuid7
 
 from agentic_patterns.base import BaseAgentState
-from agentic_patterns.data_agent_v2.agent import DATA_AGENT_V2_BUILDER
-from agentic_patterns.data_agent_v2.prompts import DATA_AGENT_V2_SYSTEM_PROMPT
-from agentic_patterns.data_agent_v2.state import DataAgentContext
 from agentic_patterns.shared import ESSENTIAL_TOOL_NAMES
+from ui.backend.agent_runtime import BUILDER, build_context
 from ui.backend.event_helpers import ai_content_events, as_text, now_iso, tool_result_event
 from ui.backend.models import MessageResponse, MessageTypes
 from ui.backend.pubsub import listen_for_interrupt
-from ui.backend.thread_store import get_latest_snapshot, redis_url
+from ui.backend.thread_store import get_latest_snapshot, get_thread_config, redis_url
 from utils.llms import Model
 
 
@@ -130,20 +128,15 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
     """
     parent_run_id = f"run-{uuid7()}"
     workspace = Path("sandbox").resolve()
+    thread_config = await get_thread_config(thread_id)
     sentinel = object()
 
     async with AsyncRedisStore.from_conn_string(redis_url()) as store:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
-            agent = DATA_AGENT_V2_BUILDER.compile(store=store, checkpointer=ch)
-            context = DataAgentContext(
-                workspace=workspace,
-                system_prompt=DATA_AGENT_V2_SYSTEM_PROMPT,
-                agent_name="Data Agent",
-                available_skills=["fileops"],
-                model=model.value,
-            )
+            agent = BUILDER.compile(store=store, checkpointer=ch)
+            context = build_context(model, workspace, thread_config)
             config = RunnableConfig(configurable={"thread_id": thread_id})
             tc_index_to_id: dict[int, str] = {}
             queue: asyncio.Queue = asyncio.Queue()

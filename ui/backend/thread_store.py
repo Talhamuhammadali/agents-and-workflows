@@ -21,8 +21,8 @@ from redis.asyncio import Redis
 from uuid_utils import uuid7
 
 from agentic_patterns.base.schemas import Context, State
-from agentic_patterns.data_agent_v2.agent import DATA_AGENT_V2_BUILDER
-from ui.backend.models import AgentStateResponse, PendingInterrupt, ThreadMeta
+from ui.backend.agent_runtime import BUILDER
+from ui.backend.models import AgentStateResponse, PendingInterrupt, ThreadConfig, ThreadMeta
 
 THREAD_INDEX_KEY = "ui:thread_ids"
 
@@ -33,6 +33,10 @@ def redis_url() -> str:
 
 def _thread_key(thread_id: str) -> str:
     return f"ui:thread:{thread_id}"
+
+
+def _config_key(thread_id: str) -> str:
+    return f"ui:thread_config:{thread_id}"
 
 
 def _now() -> tuple[str, int]:
@@ -54,7 +58,7 @@ async def load_agent_state(thread_id: str) -> AgentStateResponse:
         await store.setup()
         async with AsyncRedisSaver.from_conn_string(redis_url()) as ch:
             await ch.asetup()
-            agent = DATA_AGENT_V2_BUILDER.compile(store=store, checkpointer=ch)
+            agent = BUILDER.compile(store=store, checkpointer=ch)
             config = RunnableConfig(configurable={"thread_id": thread_id})
             snapshot = await get_latest_snapshot(agent, config)
             if not snapshot:
@@ -70,17 +74,32 @@ async def delete_agent_thread(thread_id: str) -> None:
         await ch.adelete_thread(thread_id)
 
 
-async def create_thread(title: str | None) -> ThreadMeta:
-    """Register a new thread in Redis and return its metadata."""
+async def create_thread(title: str | None, config: ThreadConfig | None = None) -> ThreadMeta:
+    """Register a new thread in Redis with its connection config and return metadata.
+
+    The config holds secrets, so it lives under a separate key and is never
+    returned in thread listings.
+    """
     thread_id = str(uuid7())
     iso, score = _now()
     meta = ThreadMeta(thread_id=thread_id, title=title or "New chat", updated_at=iso)
     async with Redis.from_url(redis_url(), decode_responses=True) as r:
         pipe = r.pipeline()
         pipe.set(_thread_key(thread_id), meta.model_dump_json())
+        if config is not None:
+            pipe.set(_config_key(thread_id), config.model_dump_json())
         pipe.zadd(THREAD_INDEX_KEY, {thread_id: score})
         await pipe.execute()
     return meta
+
+
+async def get_thread_config(thread_id: str) -> ThreadConfig:
+    """Load a thread's connection config, or an empty config when none was set."""
+    async with Redis.from_url(redis_url(), decode_responses=True) as r:
+        raw = await r.get(_config_key(thread_id))
+    if not raw:
+        return ThreadConfig()
+    return ThreadConfig.model_validate_json(raw)
 
 
 async def list_threads() -> list[ThreadMeta]:
@@ -99,5 +118,6 @@ async def delete_thread(thread_id: str) -> None:
         pipe = r.pipeline()
         pipe.zrem(THREAD_INDEX_KEY, thread_id)
         pipe.delete(_thread_key(thread_id))
+        pipe.delete(_config_key(thread_id))
         await pipe.execute()
     await delete_agent_thread(thread_id)

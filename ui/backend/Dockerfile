@@ -9,6 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# kubectl — the infra agent reaches its target cluster and validates the CRD through it.
+RUN curl -fsSLo /usr/local/bin/kubectl \
+        "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && chmod +x /usr/local/bin/kubectl
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app

@@ -4,15 +4,16 @@ import { streamPost } from "./stream/postStream";
 import Sidebar from "./components/Sidebar";
 import ArtifactPanel from "./components/ArtifactPanel";
 import ChatPanel from "./components/ChatPanel";
+import ConnectionModal from "./components/ConnectionModal";
 import "./App.css";
 
 const EMPTY_BUNDLE = { events: [], todos: [], workspace: [], artifact: null, pendingInterrupts: [] };
 
-async function createThread(title) {
+async function createThread(title, config = null) {
   const res = await fetch("/api/threads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: title ?? null }),
+    body: JSON.stringify({ title: title ?? null, config }),
   });
   if (!res.ok) throw new Error(`Create thread failed: ${res.status}`);
   return res.json();
@@ -26,6 +27,7 @@ export default function App() {
   const [chatWidth, setChatWidth] = useState(420);
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState("");
+  const [showConnect, setShowConnect] = useState(false);
 
   const messages = useMemo(() => accumulate(bundle.events), [bundle.events]);
   const didInit = useRef(false);
@@ -57,9 +59,14 @@ export default function App() {
       .catch((err) => console.error("Failed to load models:", err));
   }, []);
 
-  async function handleNewThread() {
+  function handleNewThread() {
+    setShowConnect(true);
+  }
+
+  async function handleCreateConfiguredThread(title, config) {
+    setShowConnect(false);
     try {
-      const fresh = await createThread();
+      const fresh = await createThread(title, config);
       setThreads((prev) => [fresh, ...prev]);
       setActiveId(fresh.thread_id);
       setBundle(EMPTY_BUNDLE);
@@ -237,6 +244,11 @@ export default function App() {
         models={models}
         selectedModel={selectedModel}
         onSelectModel={setSelectedModel}
+      />
+      <ConnectionModal
+        open={showConnect}
+        onCancel={() => setShowConnect(false)}
+        onCreate={handleCreateConfiguredThread}
       />
     </div>
   );
