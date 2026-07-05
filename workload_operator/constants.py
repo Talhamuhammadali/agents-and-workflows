@@ -14,6 +14,8 @@ PLURAL = "workloadplans"
 
 API_VERSION = f"{GROUP}/{VERSION}"
 
+DEFAULT_NAMESPACE = "default"
+
 LABEL_PLAN = f"{GROUP}/plan"
 LABEL_SESSION = f"{GROUP}/session"
 LABEL_OWNER = f"{GROUP}/owner"

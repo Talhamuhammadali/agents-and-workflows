@@ -87,8 +87,9 @@ class InfraAgentContext(BaseAgentContext):
         Environments the agent has credentials for. May be empty. The agent
         decides roles and task topology from the user request.
     bash_env
-        Extra environment layered over shell commands, used to point dev-mode
-        kubectl at the workspace kubeconfig for the given environments.
+        Extra environment layered over shell commands: points dev-mode kubectl at
+        the workspace kubeconfig, and prebakes an aws environment's read-only
+        credentials so the aws cli can explore the source.
     """
 
     workspace: Path | None = None

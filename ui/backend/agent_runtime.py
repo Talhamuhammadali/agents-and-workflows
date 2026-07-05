@@ -85,12 +85,36 @@ def _environments(config: ThreadConfig) -> list[Environment]:
     return environments
 
 
+def _aws_bash_env(environments: list[Environment]) -> dict[str, str]:
+    """Prebake an aws environment's read-only credentials as shell vars for the aws cli.
+
+    The agent sees these in its shell so aws-cli source exploration works. They are
+    read-only by IAM, so exposure to the agent is the accepted trade for exploration.
+    """
+    for env in environments:
+        if env.kind == "aws" and env.credentials is not None:
+            creds = env.credentials
+            aws_env = {
+                "AWS_ACCESS_KEY_ID": creds.access_key_id,
+                "AWS_SECRET_ACCESS_KEY": creds.secret_access_key,
+                "AWS_DEFAULT_REGION": creds.region,
+                "AWS_REGION": creds.region,
+            }
+            if creds.session_token:
+                aws_env["AWS_SESSION_TOKEN"] = creds.session_token
+            return aws_env
+    return {}
+
+
 def build_context(model: Model, workspace: Path, config: ThreadConfig) -> InfraAgentContext:
     """Assemble the per-run infrastructure agent context from a thread's config."""
     skills = ["k8s", "fileops"] if config.allow_bash else ["k8s"]
     environments = _environments(config)
     kubeconfig = materialize_workspace_kubeconfig(environments, workspace)
-    bash_env = {"KUBECONFIG": str(kubeconfig)} if kubeconfig else None
+    bash_env: dict[str, str] = {}
+    if kubeconfig:
+        bash_env["KUBECONFIG"] = str(kubeconfig)
+    bash_env.update(_aws_bash_env(environments))
     return InfraAgentContext(
         workspace=workspace,
         system_prompt=INFRA_AGENT_SYSTEM_PROMPT + render_environments(environments),
@@ -98,5 +122,5 @@ def build_context(model: Model, workspace: Path, config: ThreadConfig) -> InfraA
         available_skills=skills,
         model=model.value,
         environments=environments,
-        bash_env=bash_env,
+        bash_env=bash_env or None,
     )

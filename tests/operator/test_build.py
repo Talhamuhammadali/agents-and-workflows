@@ -12,24 +12,27 @@ from workload_operator.constants import (
     LABEL_PLAN,
     LABEL_SESSION,
 )
-from workload_operator.core import build_child, plan_status_digest
+from workload_operator.core import build_child, component_namespace, plan_status_digest
 from workload_operator.models import ChildStatus, Component, OwnerMeta
 
 
-def _component():
+def _component(namespace: str | None = None):
+    metadata: dict = {"name": "web", "labels": {"team": "platform"}}
+    if namespace is not None:
+        metadata["namespace"] = namespace
     return Component(
         name="web",
         manifest={
             "apiVersion": "apps/v1",
             "kind": "Deployment",
-            "metadata": {"name": "web", "labels": {"team": "platform"}},
+            "metadata": metadata,
             "spec": {"replicas": 2},
         },
     )
 
 
 def _owner():
-    return OwnerMeta(name="migrate-web", uid="uid-123", namespace="web", session="sess-9", owner="talha")
+    return OwnerMeta(name="migrate-web", uid="uid-123", session="sess-9", owner="talha")
 
 
 def test_build_child_stamps_owner_reference():
@@ -57,9 +60,19 @@ def test_build_child_preserves_existing_labels_and_spec():
     assert child["spec"]["replicas"] == 2
 
 
-def test_build_child_sets_namespace_from_owner():
+def test_build_child_defaults_namespace_when_manifest_omits_it():
     child = build_child(_component(), _owner())
-    assert child["metadata"]["namespace"] == "web"
+    assert child["metadata"]["namespace"] == "default"
+
+
+def test_build_child_keeps_manifest_namespace():
+    child = build_child(_component(namespace="team-a"), _owner())
+    assert child["metadata"]["namespace"] == "team-a"
+
+
+def test_component_namespace_reads_manifest_then_defaults():
+    assert component_namespace(_component(namespace="team-a")) == "team-a"
+    assert component_namespace(_component()) == "default"
 
 
 def test_build_child_does_not_mutate_input_component():

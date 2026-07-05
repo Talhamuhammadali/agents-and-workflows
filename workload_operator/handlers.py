@@ -6,35 +6,64 @@ branching lives in core with a unit test, not here. Handlers are synchronous
 because the kubernetes client is synchronous; Kopf runs them in a thread pool.
 """
 
+import json
 from typing import Any
 
 import kopf
 
-from workload_operator.constants import GROUP, LABEL_OWNER, LABEL_SESSION, PLURAL, VERSION
-from workload_operator.core import build_child, is_ready, orphaned_children, plan_status_digest
-from workload_operator.k8s import apply_manifest, delete_object, dynamic_client, get_object
+from workload_operator.constants import DEFAULT_NAMESPACE, GROUP, LABEL_OWNER, LABEL_SESSION, PLURAL, VERSION
+from workload_operator.core import (
+    Health,
+    build_child,
+    component_namespace,
+    fatal_pod_reason,
+    is_ready,
+    orphaned_children,
+    plan_status_digest,
+    pod_selector,
+)
+from workload_operator.k8s import apply_manifest, delete_object, dynamic_client, get_object, list_pods
 from workload_operator.models import ChildStatus, OwnerMeta, parse_spec
 
 HEALTH_INTERVAL = 15.0
+POD_OWNING_KINDS = frozenset({"Deployment"})
 
 
-def _owner_meta(name: str, namespace: str, uid: str, meta: kopf.Meta) -> OwnerMeta:
+def _apply_error(exc: Exception) -> str:
+    """Render a cluster error as a short child note, preferring the API message.
+
+    A kubernetes API error carries the useful sentence (why an apply was refused)
+    in its JSON body message; fall back to its reason or str form. Kept short so
+    it reads as a status note, never a stack dump.
+    """
+    body = getattr(exc, "body", None)
+    if body:
+        try:
+            message = json.loads(body).get("message")
+            if message:
+                return f"apply failed: {message}"[:300]
+        except (ValueError, TypeError):
+            pass
+    return f"apply failed: {getattr(exc, 'reason', None) or exc}"[:300]
+
+
+def _owner_meta(name: str, uid: str, meta: kopf.Meta) -> OwnerMeta:
     """Assemble the owning-plan identity from the resource metadata."""
     labels = meta.get("labels", {})
     return OwnerMeta(
         name=name,
         uid=uid,
-        namespace=namespace,
         session=labels.get(LABEL_SESSION, ""),
         owner=labels.get(LABEL_OWNER, ""),
     )
 
 
-def _prune_orphans(client: Any, namespace: str, desired_names: set[str], status: Any, logger: Any) -> None:
+def _prune_orphans(client: Any, desired_names: set[str], status: Any, logger: Any) -> None:
     """Delete children recorded in status whose component left the spec.
 
-    Kind-agnostic: it deletes whatever was recorded, so a removed inference CRD
-    is pruned exactly like a removed Deployment, with no fixed kind list.
+    Kind-agnostic and namespace-aware: it deletes whatever was recorded, in the
+    namespace it was recorded in, so a removed component is pruned wherever the
+    cluster-scoped plan placed it, with no fixed kind or namespace list.
     """
     recorded = (status or {}).get("children", [])
     live = [
@@ -43,13 +72,14 @@ def _prune_orphans(client: Any, namespace: str, desired_names: set[str], status:
             "kind": child.get("kind"),
             "api_version": child.get("apiVersion"),
             "name": child.get("objectName"),
+            "namespace": child.get("namespace") or DEFAULT_NAMESPACE,
         }
         for child in recorded
     ]
     for orphan in orphaned_children(desired_names, live):
         if orphan["api_version"] and orphan["name"]:
-            delete_object(client, orphan["api_version"], orphan["kind"], orphan["name"], namespace)
-            logger.info(f"pruned orphaned child {orphan['kind']}/{orphan['name']}")
+            delete_object(client, orphan["api_version"], orphan["kind"], orphan["name"], orphan["namespace"])
+            logger.info(f"pruned orphaned child {orphan['kind']}/{orphan['name']} in {orphan['namespace']}")
 
 
 @kopf.on.create(GROUP, VERSION, PLURAL)
@@ -60,7 +90,6 @@ def reconcile(
     meta: kopf.Meta,
     status: kopf.Status,
     name: str,
-    namespace: str | None,
     uid: str,
     patch: kopf.Patch,
     logger: Any,
@@ -69,31 +98,36 @@ def reconcile(
     """Apply every component as an owned child, prune removed ones, seed status.
 
     Idempotent via server-side apply, so create, update, and resume all reuse
-    it. Pruning diffs the previously recorded children against the current spec,
-    so a component dropped from the plan has its child deleted. The health timer,
-    not this handler, decides readiness.
+    it. Each child is placed in the namespace its manifest declares, since the
+    plan is cluster-scoped. Pruning diffs the previously recorded children
+    against the current spec, so a component dropped from the plan has its child
+    deleted. The health timer, not this handler, decides readiness.
     """
-    assert namespace is not None
     plan = parse_spec(dict(spec))
-    owner = _owner_meta(name, namespace, uid, meta)
+    owner = _owner_meta(name, uid, meta)
     client = dynamic_client()
-    children = []
+    children: list[ChildStatus] = []
     for component in plan.components:
         manifest = component.manifest
-        apply_manifest(client, build_child(component, owner))
-        children.append(
-            ChildStatus(
-                name=component.name,
-                kind=manifest.kind,
-                apiVersion=manifest.apiVersion,
-                objectName=manifest.metadata.name,
-            ).model_dump()
-        )
-    _prune_orphans(client, namespace, {component.name for component in plan.components}, status, logger)
-    patch.status["children"] = children
-    patch.status["phase"] = "Pending"
-    patch.status["readyCount"] = 0
-    patch.status["observedGeneration"] = meta.get("generation")
+        namespace = component_namespace(component)
+        base = {
+            "name": component.name,
+            "kind": manifest.kind,
+            "namespace": namespace,
+            "apiVersion": manifest.apiVersion,
+            "objectName": manifest.metadata.name,
+        }
+        try:
+            apply_manifest(client, build_child(component, owner))
+            children.append(ChildStatus(**base))
+        except Exception as exc:
+            note = _apply_error(exc)
+            logger.error(f"component '{component.name}': {note}")
+            children.append(ChildStatus(**base, failed=True, note=note))
+    _prune_orphans(client, {component.name for component in plan.components}, status, logger)
+    digest = plan_status_digest(children)
+    digest["observedGeneration"] = meta.get("generation")
+    patch.status.update(digest)
     logger.info(f"reconciled {len(children)} component(s)")
 
 
@@ -108,46 +142,43 @@ def health_sweep(
     spec: kopf.Spec,
     meta: kopf.Meta,
     name: str,
-    namespace: str | None,
     uid: str,
     patch: kopf.Patch,
     logger: Any,
     **_: Any,
 ) -> None:
     """Reassess each child's health, self-heal missing ones, patch the digest."""
-    assert namespace is not None
     plan = parse_spec(dict(spec))
-    owner = _owner_meta(name, namespace, uid, meta)
+    owner = _owner_meta(name, uid, meta)
     client = dynamic_client()
     children: list[ChildStatus] = []
     for component in plan.components:
         manifest = component.manifest
         kind = manifest.kind
-        live = get_object(client, manifest.apiVersion, kind, manifest.metadata.name, namespace)
-        if live is None:
-            apply_manifest(client, build_child(component, owner))
-            children.append(
-                ChildStatus(
-                    name=component.name,
-                    kind=kind,
-                    apiVersion=manifest.apiVersion,
-                    objectName=manifest.metadata.name,
-                    note="recreated",
-                )
-            )
-            continue
-        health = is_ready(kind, live)
-        children.append(
-            ChildStatus(
-                name=component.name,
-                kind=kind,
-                apiVersion=manifest.apiVersion,
-                objectName=manifest.metadata.name,
-                ready=health.ready,
-                failed=health.failed,
-                note=health.note,
-            )
-        )
+        namespace = component_namespace(component)
+        base = {
+            "name": component.name,
+            "kind": kind,
+            "namespace": namespace,
+            "apiVersion": manifest.apiVersion,
+            "objectName": manifest.metadata.name,
+        }
+        try:
+            live = get_object(client, manifest.apiVersion, kind, manifest.metadata.name, namespace)
+            if live is None:
+                apply_manifest(client, build_child(component, owner))
+                children.append(ChildStatus(**base, note="recreated"))
+                continue
+            health = is_ready(kind, live)
+            if kind in POD_OWNING_KINDS and not health.ready:
+                reason = fatal_pod_reason(list_pods(client, namespace, pod_selector(live)))
+                if reason:
+                    health = Health(ready=False, failed=True, note=reason)
+            children.append(ChildStatus(**base, ready=health.ready, failed=health.failed, note=health.note))
+        except Exception as exc:
+            note = _apply_error(exc)
+            logger.error(f"component '{component.name}': {note}")
+            children.append(ChildStatus(**base, failed=True, note=note))
     digest = plan_status_digest(children)
     digest["observedGeneration"] = meta.get("generation")
     patch.status.update(digest)

@@ -4,7 +4,7 @@ metadata:
   name: workloadplans.poc.local
 spec:
   group: poc.local
-  scope: Namespaced
+  scope: Cluster
   names:
     kind: WorkloadPlan
     plural: workloadplans
@@ -87,6 +87,8 @@ spec:
                       name:
                         type: string
                       kind:
+                        type: string
+                      namespace:
                         type: string
                       apiVersion:
                         type: string

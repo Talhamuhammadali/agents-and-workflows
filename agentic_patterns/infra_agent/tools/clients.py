@@ -115,6 +115,12 @@ def materialize_workspace_kubeconfig(environments: list[Environment], workspace:
 def dynamic_client_for(env: Environment, workspace: Path) -> dynamic.DynamicClient:
     """Build a dynamic client for a kubernetes environment from its workspace kubeconfig.
 
+    The client's resource discovery is invalidated before use so a resource whose
+    scope changed on the server (as the WorkloadPlan did, Namespaced to Cluster)
+    is re-discovered rather than read from a stale on-disk cache. Without this a
+    long-lived process keeps treating the plan as namespaced and rejects a
+    cluster-scoped apply with "Namespace is required".
+
     Parameters
     ----------
     env
@@ -129,11 +135,16 @@ def dynamic_client_for(env: Environment, workspace: Path) -> dynamic.DynamicClie
     """
     path = materialize_kubeconfig(env, workspace)
     api = config.new_client_from_config(config_file=str(path), context=env.context)
-    return dynamic.DynamicClient(api)
+    client = dynamic.DynamicClient(api)
+    client.resources.invalidate_cache()
+    return client
 
 
-def apply_cr(client: dynamic.DynamicClient, cr: dict, namespace: str) -> dict:
+def apply_cr(client: dynamic.DynamicClient, cr: dict) -> dict:
     """Server-side apply a WorkloadPlan custom resource. Idempotent.
+
+    The plan is cluster-scoped, so it is applied with no namespace; its children
+    carry their own namespaces in their manifests.
 
     Parameters
     ----------
@@ -141,8 +152,6 @@ def apply_cr(client: dynamic.DynamicClient, cr: dict, namespace: str) -> dict:
         A dynamic client for the target environment.
     cr
         The WorkloadPlan resource body to apply.
-    namespace
-        Namespace to apply the resource in.
 
     Returns
     -------
@@ -154,15 +163,14 @@ def apply_cr(client: dynamic.DynamicClient, cr: dict, namespace: str) -> dict:
         resource,
         body=cr,
         name=cr["metadata"]["name"],
-        namespace=namespace,
         field_manager=FIELD_MANAGER,
         force_conflicts=True,
     )
     return applied.to_dict()
 
 
-def get_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | None:
-    """Read a WorkloadPlan as a full object dict, or None if it does not exist.
+def get_cr(client: dynamic.DynamicClient, name: str) -> dict | None:
+    """Read a cluster-scoped WorkloadPlan as a full object dict, or None if absent.
 
     Parameters
     ----------
@@ -170,8 +178,6 @@ def get_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | N
         A dynamic client for the target environment.
     name
         The WorkloadPlan name.
-    namespace
-        Namespace the resource lives in.
 
     Returns
     -------
@@ -180,7 +186,7 @@ def get_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | N
     """
     resource = client.resources.get(api_version=API_VERSION, kind=KIND)
     try:
-        obj = resource.get(name=name, namespace=namespace)
+        obj = resource.get(name=name)
     except ApiException as exc:
         if exc.status == 404:
             return None
@@ -188,28 +194,26 @@ def get_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | N
     return obj.to_dict()
 
 
-def list_crs(client: dynamic.DynamicClient, namespace: str) -> list[dict]:
-    """List every WorkloadPlan in a namespace as object dicts.
+def list_crs(client: dynamic.DynamicClient) -> list[dict]:
+    """List every WorkloadPlan in the cluster as object dicts.
 
     Parameters
     ----------
     client
         A dynamic client for the target environment.
-    namespace
-        Namespace to list resources in.
 
     Returns
     -------
     list of dict
-        Every WorkloadPlan in the namespace.
+        Every WorkloadPlan in the cluster.
     """
     resource = client.resources.get(api_version=API_VERSION, kind=KIND)
-    listing = resource.get(namespace=namespace)
+    listing = resource.get()
     return [item.to_dict() for item in listing.items]
 
 
-def delete_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> None:
-    """Delete a WorkloadPlan; ownerReferences cascade-delete its children.
+def delete_cr(client: dynamic.DynamicClient, name: str) -> None:
+    """Delete a cluster-scoped WorkloadPlan; ownerReferences cascade-delete its children.
 
     Parameters
     ----------
@@ -217,15 +221,42 @@ def delete_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> None:
         A dynamic client for the target environment.
     name
         The WorkloadPlan name.
-    namespace
-        Namespace the resource lives in.
     """
     resource = client.resources.get(api_version=API_VERSION, kind=KIND)
-    resource.delete(name=name, namespace=namespace)
+    resource.delete(name=name)
 
 
-def get_cr_status(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | None:
-    """Read a WorkloadPlan's status, or None if the resource does not exist.
+def list_events(client: dynamic.DynamicClient, namespace: str, involved_name: str) -> list[dict]:
+    """List the Kubernetes events for one object in a namespace, as object dicts.
+
+    Used to dive deeper when a plan will not converge: the reason a child is stuck
+    (an image that will not pull, a pod that will not schedule) and the operator's
+    own reconcile failures are recorded as events on the involved object, not in
+    the plan status, so this reads them back.
+
+    Parameters
+    ----------
+    client
+        A dynamic client for the target environment.
+    namespace
+        Namespace the events live in; for a cluster-scoped object the operator's
+        events are posted to the default namespace.
+    involved_name
+        The metadata.name of the object whose events are wanted.
+
+    Returns
+    -------
+    list of dict
+        Every event whose involvedObject has the given name. Empty when none or
+        when events cannot be read.
+    """
+    resource = client.resources.get(api_version="v1", kind="Event")
+    listing = resource.get(namespace=namespace, field_selector=f"involvedObject.name={involved_name}")
+    return [item.to_dict() for item in listing.items]
+
+
+def get_cr_status(client: dynamic.DynamicClient, name: str) -> dict | None:
+    """Read a cluster-scoped WorkloadPlan's status, or None if the resource is absent.
 
     Parameters
     ----------
@@ -233,8 +264,6 @@ def get_cr_status(client: dynamic.DynamicClient, name: str, namespace: str) -> d
         A dynamic client for the target environment.
     name
         The WorkloadPlan name.
-    namespace
-        Namespace the resource lives in.
 
     Returns
     -------
@@ -243,7 +272,7 @@ def get_cr_status(client: dynamic.DynamicClient, name: str, namespace: str) -> d
     """
     resource = client.resources.get(api_version=API_VERSION, kind=KIND)
     try:
-        obj = resource.get(name=name, namespace=namespace)
+        obj = resource.get(name=name)
     except ApiException as exc:
         if exc.status == 404:
             return None

@@ -81,6 +81,33 @@ def get_object(client: DynamicClient, api_version: str, kind: str, name: str, na
     return obj.to_dict()
 
 
+def list_pods(client: DynamicClient, namespace: str, selector: dict[str, str]) -> list[dict[str, Any]]:
+    """List the pods in a namespace matching a label selector, as plain dicts.
+
+    Parameters
+    ----------
+    client : DynamicClient
+        The client to read through.
+    namespace : str
+        Namespace to list pods in.
+    selector : dict
+        The matchLabels a workload controller owns its pods by. An empty
+        selector returns nothing, so a controller with no selector never sweeps
+        in unrelated pods.
+
+    Returns
+    -------
+    list of dict
+        The matching pods.
+    """
+    if not selector:
+        return []
+    label_selector = ",".join(f"{key}={value}" for key, value in selector.items())
+    resource = client.resources.get(api_version="v1", kind="Pod")
+    listing = resource.get(namespace=namespace, label_selector=label_selector)
+    return [item.to_dict() for item in listing.items]
+
+
 def delete_object(client: DynamicClient, api_version: str, kind: str, name: str, namespace: str) -> None:
     """Delete one object, ignoring the case where it is already gone.
 

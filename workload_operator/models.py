@@ -78,6 +78,9 @@ class ChildStatus(BaseModel):
 
     name: str = Field(description="Name of the child, matching its source component.")
     kind: str = Field(description="Kubernetes kind of the child, used to pick its health adapter.")
+    namespace: str = Field(
+        default="", description="Namespace the child was applied into, recorded so it can be found and pruned."
+    )
     apiVersion: str = Field(
         default="", description="API version of the applied object, recorded so any kind can be pruned."
     )
@@ -123,12 +126,12 @@ class OwnerMeta(BaseModel):
     reconciled and hands it to build_child, which stamps it onto every child as
     an ownerReference plus attribution labels. This is what makes the plan the
     root of an ownership tree the whole session can be queried and cascade
-    deleted by.
+    deleted by. The plan is cluster-scoped, so it carries no namespace of its
+    own; each child's namespace comes from the component manifest instead.
     """
 
     name: str = Field(description="Name of the owning plan.")
     uid: str = Field(description="UID of the owning plan, required for a valid ownerReference.")
-    namespace: str = Field(description="Namespace the plan and its children live in.")
     session: str = Field(default="", description="Agent session id propagated to children for attribution.")
     owner: str = Field(default="", description="Requesting user propagated to children for attribution.")
 

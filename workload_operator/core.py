@@ -11,6 +11,7 @@ from typing import Any, NamedTuple
 
 from workload_operator.constants import (
     API_VERSION,
+    DEFAULT_NAMESPACE,
     KIND,
     LABEL_COMPONENT,
     LABEL_OWNER,
@@ -18,6 +19,11 @@ from workload_operator.constants import (
     LABEL_SESSION,
 )
 from workload_operator.models import ChildStatus, Component, OwnerMeta, Phase
+
+FATAL_WAITING_REASONS = frozenset(
+    {"CrashLoopBackOff", "ImagePullBackOff", "ErrImagePull", "CreateContainerConfigError", "InvalidImageName"}
+)
+RESTART_THRESHOLD = 3
 
 
 class Health(NamedTuple):
@@ -55,14 +61,73 @@ def compute_phase(children: list[ChildStatus]) -> Phase:
     return "Pending"
 
 
+def _progress_deadline_exceeded(status: dict[str, Any]) -> bool:
+    """True when the Deployment's own conditions report the rollout has given up.
+
+    ProgressDeadlineExceeded is the single terminal signal a Deployment writes
+    onto its own object: unlike a Job it never counts failures, so this is how a
+    stalled rollout (an image that will not pull, pods that never schedule)
+    becomes failed rather than pending forever.
+    """
+    for condition in status.get("conditions", []):
+        if (
+            condition.get("type") == "Progressing"
+            and condition.get("status") == "False"
+            and condition.get("reason") == "ProgressDeadlineExceeded"
+        ):
+            return True
+    return False
+
+
 def _deployment_health(obj: dict[str, Any]) -> Health:
-    """Ready once ready replicas meet the desired replica count."""
+    """Ready once ready replicas meet the desired count; failed once the rollout deadline is exceeded."""
     spec = obj.get("spec", {})
     status = obj.get("status", {})
     desired = spec.get("replicas", 1)
     ready_replicas = status.get("readyReplicas", 0)
+    if _progress_deadline_exceeded(status):
+        return Health(ready=False, failed=True, note="rollout stalled: progress deadline exceeded")
     note = f"{ready_replicas}/{desired} replicas ready"
     return Health(ready=ready_replicas >= desired, failed=False, note=note)
+
+
+def pod_selector(obj: dict[str, Any]) -> dict[str, str]:
+    """Return the matchLabels a workload controller uses to own its pods, or an empty dict."""
+    selector = (obj.get("spec", {}) or {}).get("selector", {}) or {}
+    return selector.get("matchLabels", {}) or {}
+
+
+def fatal_pod_reason(pods: list[dict[str, Any]], restart_threshold: int = RESTART_THRESHOLD) -> str | None:
+    """Return a short reason if any pod is terminally stuck, else None.
+
+    Terminal means a container is in a fatal waiting state (a crash loop, or an
+    image it cannot pull or configure) or has restarted past the threshold. A
+    Deployment never surfaces this on its own object, so the operator reads it
+    from the pods to escalate a crash loop instead of reporting pending forever.
+
+    Parameters
+    ----------
+    pods : list of dict
+        The live pods owned by the workload, each carrying status.containerStatuses.
+    restart_threshold : int
+        Restart count at or above which a container is treated as terminally failed.
+
+    Returns
+    -------
+    str or None
+        A short reason naming the offending pod and cause, or None when no pod
+        is terminally stuck.
+    """
+    for pod in pods:
+        pod_name = (pod.get("metadata", {}) or {}).get("name", "pod")
+        for container in (pod.get("status", {}) or {}).get("containerStatuses", []) or []:
+            reason = ((container.get("state", {}) or {}).get("waiting") or {}).get("reason")
+            if reason in FATAL_WAITING_REASONS:
+                return f"{pod_name}: {reason}"
+            restarts = container.get("restartCount", 0)
+            if restarts >= restart_threshold:
+                return f"{pod_name}: container {container.get('name', '?')} restarted {restarts} times"
+    return None
 
 
 def _job_health(obj: dict[str, Any]) -> Health:
@@ -136,13 +201,36 @@ def is_ready(kind: str, obj: dict[str, Any]) -> Health:
     return adapter(obj)
 
 
+def component_namespace(component: Component) -> str:
+    """Return the namespace a component targets, from its manifest, defaulting when omitted.
+
+    The plan is cluster-scoped and has no namespace of its own, so each child is
+    placed by the namespace its own manifest declares. A plan may therefore span
+    namespaces. A manifest that omits the namespace lands in the default one.
+
+    Parameters
+    ----------
+    component : Component
+        The named component whose target namespace is being resolved.
+
+    Returns
+    -------
+    str
+        The manifest's metadata.namespace, or the default namespace when absent.
+    """
+    metadata = component.manifest.metadata.model_dump()
+    return metadata.get("namespace") or DEFAULT_NAMESPACE
+
+
 def build_child(component: Component, owner: OwnerMeta) -> dict[str, Any]:
     """Turn a component into the child object to apply, owned by the plan.
 
     Stamps an ownerReference back to the plan so cascade garbage collection
     deletes the child when the plan is deleted, and copies the attribution
-    labels so the whole session is queryable by who or what created it. Existing
-    labels on the manifest are preserved. The input component is not mutated.
+    labels so the whole session is queryable by who or what created it. The
+    child is placed in the namespace its own manifest declares, defaulting to
+    the default namespace, since the cluster-scoped plan has none to impose.
+    Existing labels on the manifest are preserved. The input is not mutated.
 
     Parameters
     ----------
@@ -159,7 +247,7 @@ def build_child(component: Component, owner: OwnerMeta) -> dict[str, Any]:
     """
     child = component.manifest.model_dump()
     metadata = child.setdefault("metadata", {})
-    metadata["namespace"] = owner.namespace
+    metadata.setdefault("namespace", DEFAULT_NAMESPACE)
     labels = metadata.setdefault("labels", {})
     labels[LABEL_PLAN] = owner.name
     labels[LABEL_COMPONENT] = component.name

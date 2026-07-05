@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: workload-operator
-  namespace: default
+  namespace: workload-operator-system
   labels:
     app: workload-operator
 spec:

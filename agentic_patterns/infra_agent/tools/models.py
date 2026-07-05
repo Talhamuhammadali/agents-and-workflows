@@ -70,12 +70,16 @@ class PlanModel(BaseModel):
         return self
 
 
-def build_workload_plan(plan: PlanModel, name: str) -> dict:
+def build_workload_plan(plan: PlanModel, name: str, namespace: str | None = None) -> dict:
     """Translate a validated PlanModel into a WorkloadPlan custom resource.
 
-    Each component's migration metadata is folded into its manifest annotations
-    so the declared losses live in the CR, not only in chat. Pre-existing
-    annotations are preserved and the caller's manifests are never mutated.
+    The plan is cluster-scoped, so each component is placed by its manifest's own
+    namespace; when a manifest omits one and a target namespace is given, that
+    target is stamped on so the component lands where the run is aimed rather
+    than in the operator's default. Each component's migration metadata is folded
+    into its manifest annotations so the declared losses live in the CR, not only
+    in chat. Pre-existing metadata is preserved and the caller's manifests are
+    never mutated.
 
     Parameters
     ----------
@@ -83,6 +87,8 @@ def build_workload_plan(plan: PlanModel, name: str) -> dict:
         The validated plan to translate.
     name
         The metadata.name for the WorkloadPlan resource.
+    namespace
+        Target namespace stamped onto any component manifest that omits one.
 
     Returns
     -------
@@ -92,13 +98,16 @@ def build_workload_plan(plan: PlanModel, name: str) -> dict:
     components = []
     for component in plan.components:
         manifest = deepcopy(component.manifest)
-        annotations = {**(manifest.get("metadata") or {}).get("annotations", {})}
+        metadata = manifest.setdefault("metadata", {})
+        if namespace and not metadata.get("namespace"):
+            metadata["namespace"] = namespace
+        annotations = {**metadata.get("annotations", {})}
         if component.source_ref:
             annotations[ANN_SOURCE_REF] = component.source_ref
         if component.accepted_losses:
             annotations[ANN_ACCEPTED_LOSSES] = "; ".join(component.accepted_losses)
         if annotations:
-            manifest.setdefault("metadata", {})["annotations"] = annotations
+            metadata["annotations"] = annotations
         components.append({"name": component.name, "manifest": manifest})
 
     return {

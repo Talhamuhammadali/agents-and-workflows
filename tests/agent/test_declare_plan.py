@@ -20,8 +20,6 @@ from tests.operator.conftest import runner_args, wait_until
 
 pytestmark = pytest.mark.integration
 
-PLAN_NAME = "agent-web"
-
 
 def _deployment(namespace: str, name: str):
     try:
@@ -56,14 +54,15 @@ def test_declare_plan_applies_cr_and_operator_reconciles(namespace: str, tmp_pat
         namespace=namespace,
     )
     agent_client = dynamic_client_for(env, tmp_path)
-    cr = build_workload_plan(_plan(), name=PLAN_NAME)
+    plan_name = f"agent-web-{namespace}"
+    cr = build_workload_plan(_plan(), name=plan_name, namespace=namespace)
 
     with KopfRunner(runner_args(namespace)) as runner:
-        apply_cr(agent_client, cr, namespace)
+        apply_cr(agent_client, cr)
         wait_until(lambda: _deployment(namespace, "web") is not None, timeout=60)
         wait_until(
-            lambda: (get_cr_status(agent_client, PLAN_NAME, namespace) or {}).get("phase") == "Ready",
+            lambda: (get_cr_status(agent_client, plan_name) or {}).get("phase") == "Ready",
             timeout=120,
         )
-        assert (get_cr_status(agent_client, PLAN_NAME, namespace) or {}).get("readyCount") == 1
+        assert (get_cr_status(agent_client, plan_name) or {}).get("readyCount") == 1
     assert runner.exit_code == 0

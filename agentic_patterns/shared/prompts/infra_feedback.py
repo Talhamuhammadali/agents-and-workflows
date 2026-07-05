@@ -18,8 +18,21 @@ INFRA_FEEDBACK = {
     ),
     "get_plan_status_error": "{prefix} Could not read status for plan '{name}': {error}",
     "get_plan_status_missing": "{prefix} No plan named '{name}' exists on target '{target}' yet.",
+    "get_plan_status_nostatus": (
+        "{prefix} Plan '{name}' on '{target}' has no status yet — the operator has not recorded a reconcile. "
+        "That is normal for a second or two after declaring; if it persists across a few polls the operator is "
+        "likely down or cannot reach the plan, so investigate the operator rather than polling indefinitely."
+    ),
     "get_plan_status_ok": (
         "{prefix} Plan '{name}' on '{target}': phase={phase}, ready={ready}.\nChildren:\n{children}\n{attention}"
+    ),
+    "get_plan_status_stuck": (
+        "{prefix} Plan '{name}' on '{target}' is not converging: phase={phase}, ready={ready}.\n"
+        "Children:\n{children}\nConditions:\n{conditions}\nReconcile progress: {progress}\n"
+        "Recent warnings:\n{events}\n\n"
+        "Polling will not fix this. Read the warnings and conditions above and act on the cause: fix the declared "
+        "manifests and update_plan, or escalate to the user when it needs a human (a forbidden operation, an image "
+        "that will not pull, insufficient resources). Do not keep polling a stuck plan."
     ),
     "plan_missing": (
         "{prefix} No plan named '{name}' exists on target '{target}'. Use declare_plan to create it first."
@@ -61,4 +74,10 @@ INFRA_FEEDBACK = {
     "list_plans_detail": (
         "{prefix} Plan '{name}' on '{target}': intent={intent}, phase={phase}.\nComponents:\n{components}"
     ),
+    "check_escalations_no_targets": "{prefix} You have no kubernetes environments to check for escalations.",
+    "check_escalations_none": (
+        "{prefix} No plans need attention; every plan is Pending or Ready across your kubernetes environments."
+    ),
+    "check_escalations_found": "{prefix} Plans needing attention:\n{escalations}",
+    "check_escalations_error": "{prefix} Could not check for escalations:\n{errors}",
 }
