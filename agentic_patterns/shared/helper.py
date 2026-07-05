@@ -8,12 +8,13 @@ from langgraph.types import Command
 
 from agentic_patterns.shared.prompts.ask_feedback import ASK_FEEDBACK
 from agentic_patterns.shared.prompts.bash_feedback import BASH_FEEDBACK
+from agentic_patterns.shared.prompts.infra_feedback import INFRA_FEEDBACK
 from agentic_patterns.shared.prompts.skill_feedback import SKILL_FEEDBACK
 from agentic_patterns.shared.prompts.workspace_feedback import FILE_FEEDBACK, SYSTEM_PREFIX
 from helpers.filesystem import FileSystem
 
 _FILE_TOOL_NAMES = frozenset({"read_file", "write_file"})
-_FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK, **ASK_FEEDBACK, **SKILL_FEEDBACK}
+_FEEDBACK = {**FILE_FEEDBACK, **BASH_FEEDBACK, **ASK_FEEDBACK, **SKILL_FEEDBACK, **INFRA_FEEDBACK}
 
 
 def feedback(key: str, **kwargs: Any) -> str:
