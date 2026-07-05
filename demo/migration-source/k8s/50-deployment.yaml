@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secrets-viewer
+  namespace: talhas-experiments
+  labels:
+    app: secrets-viewer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: secrets-viewer
+  template:
+    metadata:
+      labels:
+        app: secrets-viewer
+    spec:
+      serviceAccountName: secrets-viewer
+      containers:
+        - name: secrets-viewer
+          image: 545009868178.dkr.ecr.us-west-2.amazonaws.com/talhas-secrets-viewer:1.1
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: web-config
+          env:
+            - name: SECRETS_DIR
+              value: /etc/app-secrets
+          volumeMounts:
+            - name: secrets
+              mountPath: /etc/app-secrets
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: secrets
+          secret:
+            secretName: web-secrets

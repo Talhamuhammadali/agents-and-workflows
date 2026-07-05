@@ -56,6 +56,8 @@ Deterministic reconciliation is dumb and mechanical. **Never call the LLM from i
 
 Controller auto-resolves deterministic cases; escalates ambiguous ones by pushing onto a **Redis stream** consumed by an ARQ worker / LangGraph agent. Keeps the controller fire-and-forget; reuses existing buffer-and-replay. (Status-as-queue is the more k8s-native alternative but higher friction given the existing stack.)
 
+**As built (spec-01 PoC):** shipped with the **status-as-queue** path, not Redis — a failed child sets `status.phase = Failed` and adds a `NeedsAttention` condition naming the failed children. The spec-02 agent polls that condition (`check_escalations` is a stub over the same status read for now). Redis remains the intended production channel; the seam is unchanged.
+
 ## Observability (agent-visible logs + "describe")
 
 - **"Describe" is a composite**, not an endpoint: GET the object (spec/status/conditions) + **Events API** (`fieldSelector=involvedObject.uid=...`). Events hold the useful signals (FailedScheduling, Unhealthy, BackOff).

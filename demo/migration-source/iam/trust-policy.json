@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::545009868178:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/CD91882277C3C3BF1A7A0E81EC3F959F"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.us-west-2.amazonaws.com/id/CD91882277C3C3BF1A7A0E81EC3F959F:aud": "sts.amazonaws.com",
+          "oidc.eks.us-west-2.amazonaws.com/id/CD91882277C3C3BF1A7A0E81EC3F959F:sub": "system:serviceaccount:talhas-experiments:secrets-viewer"
+        }
+      }
+    }
+  ]
+}

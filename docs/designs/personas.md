@@ -5,10 +5,11 @@ cr_kind: WorkloadPlan
 intents_covered: [migrate, provision]
 note: >
   Two thin personas for the agent-operator PoC. Both drive ONE custom
-  resource (WorkloadPlan) with a discriminated `spec.intent`. The operator
-  materializes children (owner-ref'd), the agent reads status. "Done" = all
-  children healthy / the run completes. See agent-operator-design.md for the
-  operator internals.
+  resource (WorkloadPlan) whose spec is a flat list of raw manifests
+  (spec.components[]) plus an optional spec.intent tag. The operator adopts
+  each manifest (owner-ref'd child), watches its health, and writes status;
+  the agent reads status. "Done" = phase Ready. See agent-operator-design.md
+  for the operator internals and spec-01-crd-operator.md for the shipped CRD.
 ---
 
 # Agent-Operator PoC — Personas
@@ -18,12 +19,41 @@ Both personas share the same shape:
 ```
 intent capture  →  agent authors ONE WorkloadPlan CR  →  Gate 1 (pydantic)
                 →  operator reconciles → owner-ref'd children
-                →  agent polls status.phase / conditions  →  report when healthy
+                →  agent polls status.phase / conditions  →  report when Ready
 ```
 
 The CR is the single point of entry, watch, and cleanup: delete the CR →
-cascade-GC removes every child. The operator owns `status.phase`; the agent
-owns `spec`.
+cascade-GC removes every child. The operator owns `status`; the agent owns
+`spec`. There is no discriminated `spec.migrate`/`spec.provision` body — both
+intents produce the **same** flat `spec.components[]`, each entry a real
+Kubernetes manifest the operator applies verbatim. `spec.intent` is a plain tag
+(`migrate` | `provision`) the agent sets so its own reporting reads right; the
+operator treats every component identically regardless of intent.
+
+## Status contract (as shipped in spec-01)
+
+```
+status.phase:  Pending | Ready | Failed        # Failed if any child failed;
+                                                # Ready if all children ready
+status.readyCount: <int>                        # how many children are ready
+status.observedGeneration: <int>
+status.children[]:
+  - name:        <component name>
+    kind:        Deployment | Service | ConfigMap | Job | ...
+    apiVersion:  apps/v1 | v1 | batch/v1 | ...
+    objectName:  <metadata.name of the child>
+    ready:       true | false
+    failed:      true | false
+    note:        "<why, e.g. 'failed > backoffLimit' or 'recreated'>"
+status.conditions[]:
+  - type: NeedsAttention                        # present ONLY when phase=Failed;
+    status: "True"                              # this is the agent's escalation
+    message: "<names the failed children>"
+```
+
+There is no `AllHealthy` condition and no `resultDigest` — Ready is expressed by
+`phase`, and a benchmark's metrics are read by the agent from the Job's **pod
+logs**, not from status (status is a digest/pointer, never a raw result blob).
 
 ---
 
@@ -48,7 +78,7 @@ from EKS to local minikube. `intent: migrate`.
 
 ### Turn 2 — Discover source (read-only)
 
-**Tool call:** `discover_source(context="eks-prod", namespace="web")`
+**Tool call:** `discover_source(namespace="web")` against the SOURCE role (EKS).
 
 Writes `inventory.md` to the workspace:
 
@@ -61,49 +91,66 @@ web/Ingress/web-api           class=alb          host=api.example.com
 
 ### Turn 3 — Declare the migration (single CR)
 
-**Tool call:** `declare_migration(spec=...)` → Gate 1 validates → submits one CR.
+**Tool call:** `declare_plan(name="migrate-web-app", intent="migrate", components=[...])`
+→ Gate 1 (pydantic `PlanModel`) validates → translates to the CR → server-side
+applies one object. The lossy mapping travels as an annotation on the component
+so the loss is declared **in the CR**, not just in chat.
 
 ```yaml
 kind: WorkloadPlan
 metadata: { name: migrate-web-app }
 spec:
   intent: migrate
-  target:  { provider: minikube, context: minikube }
-  approval: { required: false }          # dev, non-destructive
-  migrate:
-    source: { provider: aws, context: eks-prod, namespace: web }
-    components:
-      - sourceRef: web/Deployment/web-api
-        mode: native
-        chosen: Deployment (replicas 3, image web-api:1.4)
-      - sourceRef: web/Service/web-api
-        mode: native
-        chosen: Service ClusterIP:8080
-      - sourceRef: web/ConfigMap/web-api-config
-        mode: native
-        chosen: ConfigMap (2 keys)
-      - sourceRef: web/Ingress/web-api
-        mode: native
-        chosen: nginx Ingress
-        acceptedLosses: ["ALB → nginx: no WAF, no AWS cert; host preserved"]
+  components:
+    - name: web-api
+      manifest:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: web-api
+          annotations: { poc.local/source-ref: "web/Deployment/web-api" }
+        spec: { replicas: 3, template: { spec: { containers: [{ name: web-api, image: web-api:1.4 }] } } }
+    - name: web-api-svc
+      manifest:
+        apiVersion: v1
+        kind: Service
+        metadata: { name: web-api }
+        spec: { type: ClusterIP, ports: [{ port: 8080 }] }
+    - name: web-api-config
+      manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata: { name: web-api-config }
+        data: { APP_ENV: dev, LOG_LEVEL: info }
+    - name: web-api-ingress
+      manifest:
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: web-api
+          annotations:
+            poc.local/source-ref: "web/Ingress/web-api"
+            poc.local/accepted-losses: "ALB → nginx: no WAF, no AWS cert; host preserved"
+        spec: { ingressClassName: nginx, rules: [{ host: api.example.com }] }
 ```
 
 ### Turn 4 — Converge + report
 
 ```
-status.phase: PROVISIONING → VALIDATING → READY
-status.conditions: [{ type: AllHealthy, status: "True" }]
+status.phase: Pending → Ready
+status.readyCount: 4
 status.children:
-  web-api (Deployment)  ready 3/3
-  web-api (Service)     ready
-  web-api-config        ready
-  web-api (Ingress)     ready  (nginx)
+  - { name: web-api,         kind: Deployment, objectName: web-api,        ready: true }
+  - { name: web-api-svc,     kind: Service,    objectName: web-api,        ready: true }
+  - { name: web-api-config,  kind: ConfigMap,  objectName: web-api-config, ready: true }
+  - { name: web-api-ingress, kind: Ingress,    objectName: web-api,        ready: true }
 ```
 
 **Agent:**
-> Migration complete. All 4 components healthy on minikube. One accepted loss:
-> the ALB became an nginx Ingress (host preserved, WAF/cert dropped — those were
-> AWS-managed). Tear down anytime with `kubectl delete workloadplan migrate-web-app`.
+> Migration complete. All 4 components healthy on minikube (phase Ready). One
+> accepted loss: the ALB became an nginx Ingress (host preserved, WAF/cert
+> dropped — those were AWS-managed). Tear down anytime with
+> `kubectl delete workloadplan migrate-web-app`.
 
 ---
 
@@ -122,58 +169,79 @@ status.children:
 
 **Agent:**
 > Llama 3 8B in fp16 is ~16GB of weights, leaving ~8GB for KV cache on your
-> 24GB GPU — fine for a modest batch. I'll declare one plan: a vLLM server plus
-> a benchmark Job that drives it, both on minikube using the GPU. It runs to
-> completion, reports metrics, then you decide whether to keep it.
+> 24GB GPU — fine for a modest batch. I'll declare one plan: a vLLM server
+> Deployment plus a benchmark Job that drives it, both on minikube using the
+> GPU. The Job runs to completion; when the plan reports Ready I'll read the
+> Job's pod logs for the metrics, then you decide whether to keep it.
 
 ### Turn 2 — Declare the provision plan (single CR)
 
-**Tool call:** `declare_provision(spec=...)` → Gate 1 validates → submits one CR.
+**Tool call:** `declare_plan(name="vllm-bench", intent="provision", components=[...])`
+→ Gate 1 validates → submits one CR. The two workloads are just two entries in
+the same `spec.components[]` — the server (a long-running Deployment) and the
+benchmark (a run-to-completion Job).
 
 ```yaml
 kind: WorkloadPlan
 metadata: { name: vllm-bench }
 spec:
   intent: provision
-  target:  { provider: minikube, context: minikube }
-  approval: { required: false }          # local, no spend
-  provision:
-    topology:
-      gpuCount: 1
-      gpuMemoryGB: 24
-    workload:
-      type: vllm-inference
-      baseModel: llama-3-8b
-      precision: fp16
-      serve: { engineArgs: { "--max-model-len": 4096, "--gpu-memory-utilization": 0.9 } }
-    jobs:
-      benchmark:
-        type: batch-inference
-        prompts: 2000
-        concurrency: 32
-        metrics: [tokens_per_sec, ttft_ms, p95_latency_ms]
+  components:
+    - name: vllm-server
+      manifest:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata: { name: vllm-server }
+        spec:
+          replicas: 1
+          template:
+            spec:
+              containers:
+                - name: vllm
+                  image: vllm/vllm-openai:latest
+                  args: ["--model", "meta-llama/Meta-Llama-3-8B", "--dtype", "float16",
+                         "--max-model-len", "4096", "--gpu-memory-utilization", "0.9"]
+                  resources: { limits: { "nvidia.com/gpu": 1 } }
+    - name: vllm-bench
+      manifest:
+        apiVersion: batch/v1
+        kind: Job
+        metadata: { name: vllm-bench }
+        spec:
+          backoffLimit: 0
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+                - name: bench
+                  image: vllm-bench:local
+                  args: ["--target", "http://vllm-server:8000", "--prompts", "2000", "--concurrency", "32"]
 ```
 
 ### Turn 3 — Provision + run + report
 
 ```
-status.phase: PROVISIONING → VALIDATING → READY → RUNNING → DONE
+status.phase: Pending → Ready          # Ready once the Job succeeds (succeeded >= 1)
+status.readyCount: 2
 status.children:
-  vllm-server (Deployment)  ready 1/1   gpu=1
-  vllm-bench  (Job)         completed
-status.conditions: [{ type: AllHealthy, status: "True" }]
-status.resultDigest:
-  tokens_per_sec: 3120
-  ttft_ms: 210
-  p95_latency_ms: 640
-  prompts: 2000/2000
+  - { name: vllm-server, kind: Deployment, objectName: vllm-server, ready: true }
+  - { name: vllm-bench,  kind: Job,        objectName: vllm-bench,  ready: true }
 ```
 
+Then the agent reads the benchmark output from the Job's pod:
+
+**Tool call:** `logs(role="target", pod="<vllm-bench pod>")` →
+`tokens_per_sec=3120  ttft_ms=210  p95_latency_ms=640  prompts=2000/2000`
+
 **Agent:**
-> Benchmark complete: 3,120 tok/s aggregate, TTFT 210 ms, p95 640 ms over 2,000
-> prompts at concurrency 32. The vLLM server is still up (phase RUNNING → idle).
-> Keep it for more runs, or `kubectl delete workloadplan vllm-bench` to release
-> the GPU.
+> Benchmark complete (phase Ready — the Job succeeded): 3,120 tok/s aggregate,
+> TTFT 210 ms, p95 640 ms over 2,000 prompts at concurrency 32 (read from the
+> Job's pod logs). The vLLM server Deployment is still up. Keep it for more
+> runs, or `kubectl delete workloadplan vllm-bench` to release the GPU.
+
+If the Job had exceeded its `backoffLimit`, the plan would instead be
+`phase: Failed` with a `NeedsAttention` condition naming `vllm-bench` — the
+signal the agent polls for to know a run needs a human.
 
 ---
 
@@ -182,10 +250,12 @@ status.resultDigest:
 | | Persona A (migrate) | Persona B (provision) |
 |---|---|---|
 | Desired state from | reading EKS | engineer intent |
-| CR body | `spec.migrate.components[]` | `spec.provision.{topology,workload,jobs}` |
-| Lifecycle used | `…→ READY` (steady) | `…→ RUNNING → DONE` (run-to-completion) |
-| "Done" | all children healthy | benchmark Job completed + healthy |
+| CR body | `spec.components[]` (flat manifests) | `spec.components[]` (flat manifests) |
+| `spec.intent` tag | `migrate` | `provision` |
+| "Done" | phase `Ready` (all children ready) | phase `Ready` (benchmark Job succeeded) |
+| Metrics readout | n/a | agent reads Job pod **logs** (not status) |
 | Cleanup | delete CR → cascade GC | delete CR → cascade GC |
 
-Same envelope, same operator, same watch/cleanup story — only the `spec.<intent>`
-body and the lifecycle tail differ.
+Same envelope, same operator, same watch/cleanup story. The only real
+difference is where the components come from (discovery vs intent) and how the
+agent reports — the CR shape and the operator are identical.

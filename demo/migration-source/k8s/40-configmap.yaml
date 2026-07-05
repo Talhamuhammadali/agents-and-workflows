@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  namespace: talhas-experiments
+data:
+  APP_ENV: aws-eks
+  LOG_LEVEL: info

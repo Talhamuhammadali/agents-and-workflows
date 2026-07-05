@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: talhas-experiments
+  labels:
+    app.kubernetes.io/part-of: talhas-secrets-viewer
+    owner: talhas

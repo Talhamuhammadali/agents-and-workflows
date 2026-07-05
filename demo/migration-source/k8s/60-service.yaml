@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: secrets-viewer
+  namespace: talhas-experiments
+spec:
+  type: ClusterIP
+  selector:
+    app: secrets-viewer
+  ports:
+    - port: 8080
+      targetPort: 8080
