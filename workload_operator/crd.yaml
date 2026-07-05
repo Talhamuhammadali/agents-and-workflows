@@ -17,6 +17,9 @@ spec:
       subresources:
         status: {}
       additionalPrinterColumns:
+        - name: Intent
+          type: string
+          jsonPath: .spec.intent
         - name: Phase
           type: string
           jsonPath: .status.phase

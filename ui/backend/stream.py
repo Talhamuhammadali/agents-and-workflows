@@ -128,6 +128,7 @@ async def sse_event_stream(thread_id: str, message: str | dict, model: Model) ->
     """
     parent_run_id = f"run-{uuid7()}"
     workspace = Path("sandbox").resolve()
+    workspace.mkdir(parents=True, exist_ok=True)
     thread_config = await get_thread_config(thread_id)
     sentinel = object()
 

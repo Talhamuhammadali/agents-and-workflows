@@ -5,6 +5,8 @@ and loaded explicitly, so the agent can only ever reach the environment it was
 handed and never the ambient default context.
 """
 
+import os
+import subprocess
 from pathlib import Path
 
 from kubernetes import config, dynamic
@@ -14,6 +16,7 @@ from agentic_patterns.infra_agent.state import Environment
 from workload_operator.constants import API_VERSION, KIND
 
 FIELD_MANAGER = "infra-agent"
+WORKSPACE_KUBECONFIG = ".kubeconfig"
 
 
 def materialize_kubeconfig(env: Environment, workspace: Path) -> Path:
@@ -36,6 +39,77 @@ def materialize_kubeconfig(env: Environment, workspace: Path) -> Path:
     path = Path(workspace) / f"kubeconfig-{env.name}"
     path.write_text(env.kubeconfig)
     return path
+
+
+def _current_context(kubeconfig: Path) -> str | None:
+    """Return a kubeconfig file's current-context, or None."""
+    result = subprocess.run(
+        ["kubectl", "config", "view", f"--kubeconfig={kubeconfig}", "--output", "jsonpath={.current-context}"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip() or None
+
+
+def materialize_workspace_kubeconfig(environments: list[Environment], workspace: Path) -> Path | None:
+    """Merge every kubernetes environment into one workspace kubeconfig for shell tools.
+
+    Each environment's selected context is renamed to its environment name, so the
+    single file exposes one predictable context per environment that the agent can
+    select with kubectl. Only the given environments are reachable through it.
+
+    Parameters
+    ----------
+    environments
+        The run's environments; non-kubernetes ones are ignored.
+    workspace
+        Directory the merged kubeconfig is written into.
+
+    Returns
+    -------
+    Path or None
+        Path to the merged kubeconfig, or None when no kubernetes environment exists.
+    """
+    kube_envs = [env for env in environments if env.kind == "kubernetes" and env.kubeconfig]
+    if not kube_envs:
+        return None
+
+    sources: list[str] = []
+    for env in kube_envs:
+        blob = env.kubeconfig
+        if blob is None:
+            continue
+        source = Path(workspace) / f"{WORKSPACE_KUBECONFIG}-src-{env.name}"
+        source.write_text(blob)
+        selected = env.context or _current_context(source)
+        if selected and selected != env.name:
+            subprocess.run(
+                ["kubectl", "config", f"--kubeconfig={source}", "rename-context", selected, env.name],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        sources.append(str(source))
+
+    merged = Path(workspace) / WORKSPACE_KUBECONFIG
+    view = subprocess.run(
+        ["kubectl", "config", "view", "--flatten"],
+        env={**os.environ, "KUBECONFIG": ":".join(sources)},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    merged.write_text(view.stdout)
+    subprocess.run(
+        ["kubectl", "config", f"--kubeconfig={merged}", "use-context", kube_envs[0].name],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    for src in sources:
+        Path(src).unlink(missing_ok=True)
+    return merged
 
 
 def dynamic_client_for(env: Environment, workspace: Path) -> dynamic.DynamicClient:
@@ -85,6 +159,69 @@ def apply_cr(client: dynamic.DynamicClient, cr: dict, namespace: str) -> dict:
         force_conflicts=True,
     )
     return applied.to_dict()
+
+
+def get_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | None:
+    """Read a WorkloadPlan as a full object dict, or None if it does not exist.
+
+    Parameters
+    ----------
+    client
+        A dynamic client for the target environment.
+    name
+        The WorkloadPlan name.
+    namespace
+        Namespace the resource lives in.
+
+    Returns
+    -------
+    dict or None
+        The whole resource, or None when the plan is absent.
+    """
+    resource = client.resources.get(api_version=API_VERSION, kind=KIND)
+    try:
+        obj = resource.get(name=name, namespace=namespace)
+    except ApiException as exc:
+        if exc.status == 404:
+            return None
+        raise
+    return obj.to_dict()
+
+
+def list_crs(client: dynamic.DynamicClient, namespace: str) -> list[dict]:
+    """List every WorkloadPlan in a namespace as object dicts.
+
+    Parameters
+    ----------
+    client
+        A dynamic client for the target environment.
+    namespace
+        Namespace to list resources in.
+
+    Returns
+    -------
+    list of dict
+        Every WorkloadPlan in the namespace.
+    """
+    resource = client.resources.get(api_version=API_VERSION, kind=KIND)
+    listing = resource.get(namespace=namespace)
+    return [item.to_dict() for item in listing.items]
+
+
+def delete_cr(client: dynamic.DynamicClient, name: str, namespace: str) -> None:
+    """Delete a WorkloadPlan; ownerReferences cascade-delete its children.
+
+    Parameters
+    ----------
+    client
+        A dynamic client for the target environment.
+    name
+        The WorkloadPlan name.
+    namespace
+        Namespace the resource lives in.
+    """
+    resource = client.resources.get(api_version=API_VERSION, kind=KIND)
+    resource.delete(name=name, namespace=namespace)
 
 
 def get_cr_status(client: dynamic.DynamicClient, name: str, namespace: str) -> dict | None:

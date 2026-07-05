@@ -62,11 +62,12 @@ def pre_llm_processing(message: str, messages: list[BaseMessage]) -> list[BaseMe
 
 
 def get_filesystem(tool_runtime: ToolRuntime) -> FileSystem:
-    """Extract workspace from ToolRuntime context and return a FileSystem instance."""
+    """Extract workspace and optional bash env from ToolRuntime context and return a FileSystem instance."""
     workspace = getattr(tool_runtime.context, "workspace", None)
     if workspace is None:
         raise RuntimeError("No workspace configured in agent context.")
-    return FileSystem(workspace=str(workspace))
+    bash_env = getattr(tool_runtime.context, "bash_env", None)
+    return FileSystem(workspace=str(workspace), env=bash_env)
 
 
 def content_hash(content: str) -> str:

@@ -1,7 +1,7 @@
 ---
 name: k8s
 description: Provision or migrate Kubernetes workloads by declaring a single WorkloadPlan on a target cluster and watching it converge.
-allowed-tools: "declare_plan, get_plan_status, Read, Write, Edit"
+allowed-tools: "declare_plan, get_plan_status, update_plan, delete_plan, list_plans, Read, Write, Edit"
 version: 0.1.0
 ---
 

@@ -14,13 +14,19 @@ class FileSystem:
 
     _BLOCKED_COMMANDS = frozenset({"apt", "apt-get", "yum", "dnf", "pacman", "sudo"})
 
-    def __init__(self, workspace: str, allow_system_install: bool = False) -> None:
-        """Initialize filesystem with a workspace oot directory."""
+    def __init__(self, workspace: str, allow_system_install: bool = False, env: dict[str, str] | None = None) -> None:
+        """Initialize filesystem with a workspace root directory.
+
+        The optional env is layered over the process environment for spawned
+        shell commands, so callers can scope tools such as kubectl to a workspace
+        kubeconfig without leaking it into the wider process.
+        """
         workspace_path = Path(workspace).resolve()
         if not workspace_path.is_dir():
             raise ValueError(f"Workspace directory does not exist: {workspace_path}")
         self.workspace = workspace_path
         self.allow_system_install = allow_system_install
+        self.env = env or {}
 
     def _safe_path(self, path: str) -> Path:
         """Resolve path relative to workspace and block escapes."""
@@ -233,6 +239,7 @@ class FileSystem:
             proc = await asyncio.create_subprocess_shell(
                 command,
                 cwd=self.workspace,
+                env={**os.environ, **self.env},
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -259,6 +266,7 @@ class FileSystem:
         proc = await asyncio.create_subprocess_shell(
             command,
             cwd=self.workspace,
+            env={**os.environ, **self.env},
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )

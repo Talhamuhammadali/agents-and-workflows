@@ -86,7 +86,11 @@ class InfraAgentContext(BaseAgentContext):
     environments
         Environments the agent has credentials for. May be empty. The agent
         decides roles and task topology from the user request.
+    bash_env
+        Extra environment layered over shell commands, used to point dev-mode
+        kubectl at the workspace kubeconfig for the given environments.
     """
 
     workspace: Path | None = None
     environments: list[Environment] = field(default_factory=list)
+    bash_env: dict[str, str] | None = None

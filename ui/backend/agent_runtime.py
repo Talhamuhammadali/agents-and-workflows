@@ -11,8 +11,9 @@ import subprocess
 from pathlib import Path
 
 from agentic_patterns.infra_agent.agent import INFRA_AGENT_BUILDER
-from agentic_patterns.infra_agent.prompts import INFRA_AGENT_SYSTEM_PROMPT
+from agentic_patterns.infra_agent.prompts import INFRA_AGENT_SYSTEM_PROMPT, render_environments
 from agentic_patterns.infra_agent.state import Credentials, Environment, InfraAgentContext
+from agentic_patterns.infra_agent.tools.clients import materialize_workspace_kubeconfig
 from ui.backend.models import ThreadConfig
 from utils.llms import Model
 
@@ -87,11 +88,15 @@ def _environments(config: ThreadConfig) -> list[Environment]:
 def build_context(model: Model, workspace: Path, config: ThreadConfig) -> InfraAgentContext:
     """Assemble the per-run infrastructure agent context from a thread's config."""
     skills = ["k8s", "fileops"] if config.allow_bash else ["k8s"]
+    environments = _environments(config)
+    kubeconfig = materialize_workspace_kubeconfig(environments, workspace)
+    bash_env = {"KUBECONFIG": str(kubeconfig)} if kubeconfig else None
     return InfraAgentContext(
         workspace=workspace,
-        system_prompt=INFRA_AGENT_SYSTEM_PROMPT,
+        system_prompt=INFRA_AGENT_SYSTEM_PROMPT + render_environments(environments),
         agent_name=AGENT_NAME,
         available_skills=skills,
         model=model.value,
-        environments=_environments(config),
+        environments=environments,
+        bash_env=bash_env,
     )

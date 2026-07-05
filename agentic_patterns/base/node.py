@@ -33,7 +33,6 @@ async def agent_node(state: State, config: RunnableConfig, runtime: Runtime[Cont
         tool_names: list[str] = state.get("active_tools") or ESSENTIAL_TOOL_NAMES
         tools = resolve(tool_names)
 
-        print(f"[agent_node] Sending to LLM with context: {runtime.context}")
         base_llm = MODELS[runtime.context.model]  # type: ignore[index]
         llm = base_llm.bind_tools(tools)
         ai_message: AIMessageChunk | None = None
@@ -50,7 +49,6 @@ async def agent_node(state: State, config: RunnableConfig, runtime: Runtime[Cont
                 ):
                     continue
 
-                print(f"[agent_node] Received str text chunk: {chunk.content}")
                 last_block = ai_message.content_blocks[-1] if ai_message and ai_message.content_blocks else None
                 if last_block:
                     new_block = {**last_block}
