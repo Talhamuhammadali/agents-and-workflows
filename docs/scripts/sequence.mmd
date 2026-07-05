@@ -1,0 +1,19 @@
+%% One conversation turn — overview
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant B as API
+    participant A as Agent
+    participant RS as Redis · short-term<br/>(chat history)
+    participant RL as Redis · long-term<br/>(cross-session memory)
+
+    C->>B: POST /threads/{id}/stream
+    B->>RS: Load chat history
+    B->>A: Run the agent
+    A->>RL: Recall relevant memories
+    loop reasons & uses tools
+        A-->>C: Server-Sent Events (SSE) stream
+    end
+    A->>RS: Append to chat history
+    A->>RL: Save memories (preferences,<br/>solved problems, artifacts)
+    Note over C: Reply streams in live,<br/>and is there when you return

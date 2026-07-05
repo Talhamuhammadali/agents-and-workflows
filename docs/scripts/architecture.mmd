@@ -1,0 +1,40 @@
+%% Agentic system — overview
+flowchart TB
+    classDef ui   fill:#D5E8D4,stroke:#82B366,color:#16320f,font-size:15px;
+    classDef core fill:#DAE8FC,stroke:#6C8EBF,color:#11203a,font-size:15px;
+    classDef mem  fill:#FFE6CC,stroke:#D79B00,color:#3a2400,font-size:15px;
+    classDef ws   fill:#F5F5F5,stroke:#999999,color:#222222,font-size:14px;
+
+    UI["Chat UI"]:::ui
+    API["API"]:::ui
+
+    UI <== "Server-Sent Events (SSE)" ==> API
+    API == "dispatch agent run" ==> WORK
+
+    subgraph WORK["Agent Worker (ephemeral) &nbsp;·&nbsp; gVisor kernel-level isolation"]
+        direction LR
+        subgraph OPT1["Option 1 — Ephemeral sandbox (Modal / Daytona) · one sandbox per session"]
+            direction TB
+            P1["Warm pool of ready workers"]:::core
+            A1["Agent logic"]:::core
+            P1 --> A1
+        end
+        subgraph OPT2["Option 2 — Fixed worker · isolation at the tool level"]
+            direction TB
+            A2["Agent logic"]:::core
+        end
+    end
+
+    subgraph PERSIST["Persistent state — outside the worker · survives if a worker dies"]
+        direction LR
+        subgraph RED["Redis — memory"]
+            direction TB
+            ST["Short-term<br/>chat history (this conversation)"]:::mem
+            LT["Long-term — cross-session<br/>preferences · solved problems · artifacts"]:::mem
+        end
+        NFS[("NFS file system<br/>workspace")]:::ws
+    end
+
+    API <== "load / save" ==> RED
+    WORK == "reads / writes memory" ==> RED
+    WORK == "mounts filesystem" ==> NFS

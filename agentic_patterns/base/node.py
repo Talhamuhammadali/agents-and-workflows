@@ -30,7 +30,7 @@ async def agent_node(state: State, config: RunnableConfig, runtime: Runtime[Cont
 
         system_message = SystemMessage(content=runtime.context.system_prompt)
 
-        tool_names: list[str] = state["active_tools"] or ESSENTIAL_TOOL_NAMES
+        tool_names: list[str] = state.get("active_tools") or ESSENTIAL_TOOL_NAMES
         tools = resolve(tool_names)
 
         print(f"[agent_node] Sending to LLM with context: {runtime.context}")
