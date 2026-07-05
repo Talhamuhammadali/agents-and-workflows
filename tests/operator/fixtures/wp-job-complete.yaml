@@ -1,0 +1,22 @@
+apiVersion: poc.local/v1alpha1
+kind: WorkloadPlan
+metadata:
+  name: test-job-complete
+spec:
+  intent: provision
+  components:
+    - name: bench
+      manifest:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: bench-complete
+        spec:
+          backoffLimit: 2
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+                - name: bench
+                  image: busybox:1.36
+                  command: ["sh", "-c", "echo done; exit 0"]

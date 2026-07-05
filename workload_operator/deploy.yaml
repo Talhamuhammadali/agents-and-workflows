@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-operator
+  namespace: default
+  labels:
+    app: workload-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workload-operator
+  template:
+    metadata:
+      labels:
+        app: workload-operator
+    spec:
+      serviceAccountName: workload-operator
+      containers:
+        - name: operator
+          image: workload-operator:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi

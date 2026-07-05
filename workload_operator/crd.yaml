@@ -51,13 +51,20 @@ spec:
                         type: string
                       manifest:
                         type: object
-                        required: [apiVersion, kind]
+                        required: [apiVersion, kind, metadata]
                         x-kubernetes-preserve-unknown-fields: true
                         properties:
                           apiVersion:
                             type: string
                           kind:
                             type: string
+                          metadata:
+                            type: object
+                            required: [name]
+                            x-kubernetes-preserve-unknown-fields: true
+                            properties:
+                              name:
+                                type: string
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true
@@ -77,6 +84,10 @@ spec:
                       name:
                         type: string
                       kind:
+                        type: string
+                      apiVersion:
+                        type: string
+                      objectName:
                         type: string
                       ready:
                         type: boolean

@@ -319,3 +319,33 @@ testing logic through a cluster (slow, flaky).
 - Should an unknown-kind component (no health adapter) count toward `Ready`, or
   hold the plan `Pending`? PoC: count as ready with a `note`. Flag if that hides
   failures.
+
+## Post-review hardening (resolved)
+
+A post-build review surfaced these; all three are now fixed and tested.
+
+- **Pruning of removed components — DONE.** `reconcile` records each applied
+  child's identity (`apiVersion`, `objectName`) in `status.children`, then diffs
+  the recorded set against the current `spec` and deletes the orphans
+  (`orphaned_children` in `core.py`, `_prune_orphans` in `handlers.py`). It is
+  **kind-agnostic** — it deletes whatever was recorded, so a removed inference CRD
+  is pruned exactly like a removed `Deployment`, with no fixed kind list. Proven by
+  `test_reconcile_prunes_a_removed_component` and `test_prune.py`.
+- **In-cluster deployment — DONE.** `Dockerfile` + `workload_operator/deploy.yaml`
+  run the operator as the `workload-operator` ServiceAccount. Verified end-to-end:
+  built into minikube, deployed, and it drove a plan to `Ready` using only its
+  RBAC (not the developer's kubeconfig).
+- **`metadata.name` now required — DONE.** The CRD requires `manifest.metadata.name`
+  (mirrored in the `ObjectMeta` model), so a nameless component is rejected at
+  submit, not at apply. Proven by `test_manifest_missing_metadata_name_is_rejected`.
+
+## Remaining limitation (health semantics for inference services)
+
+The `Deployment` health adapter reports ready when *replicas* are ready — but a
+model server (vLLM, TGI, Triton) is "ready" only once **weights are loaded and it
+serves**, which is later. And serving CRDs (KServe `InferenceService`, `RayService`)
+have no adapter, so they fall to *unknown → ready*, which can report `Ready`
+prematurely. Closing this means adding per-kind entries to `HEALTH_ADAPTERS` (the
+evolution seam) that check a readiness probe / endpoint / CRD status condition, plus
+granting those CRD groups in `rbac.yaml`. Tracked for when a real inference workload
+is wired in.
