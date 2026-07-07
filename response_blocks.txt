@@ -1,0 +1,195 @@
+
+==================================================
+Testing: vertex-claude-sonnet-5
+==================================================
+AIMessageChunk(content='', additional_kwargs={}, response_metadata={'model_name': 'claude-sonnet-5'}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 15, 'output_tokens': 0, 'total_tokens': 15, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}, tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'The', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' user', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' is asking for a joke and', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' wants me to put', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' real', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' effort', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' into making', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' it genu', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'inely funny and', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' clever rather', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' than just throwing', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' something', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' together.', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'signature': 'EvMCCmUIDxACGAIqQGBTvPUwXTS/gfe7urpqjMcGH9QV2VzATWs/exsqcUscqlAWR4k2ctvO8/letBf2MYIXmWkx+8IW99//ENnk7EYyD2NsYXVkZS1zb25uZXQtNTgAQgh0aGlua2luZxIML43gxLXDuHrZ6ux0Ggzyrx2MVAg/6NwYzL4iMJD0ggKPnAO3Urf5Xq/fYedW5QmRBIhH7ASBbyXJghOq8faBqA1FPf/2CPXQIMhB+Cq7Ad2zLqjh/tCDJ51ub8me7fPG9JK5ahtZ+BW42AT54vLQ0Pw7j0zQBcH9+V2olQQEAq0EJWQ7biuoOmY1UkxRsNQMtFGTpOuT9KxkH+iG7PyhPU/vtcBfF7Te6Jszqj2RnL4KFH5cproJgROoRcZn4tqO4bcPyBI5Ig08RJJRTZXnjwCTzTZilIYSD8qJGsEBVFdN8QDcXxkiCEm7PV3znDHG+dY7JKZdYT39taivieYubDaV5kdDuqoM7j8YAQ==', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='Why do', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' programmers pr', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='efer d', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ark mode?', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='\n\nBecause light', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' att', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='racts b', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ugs.\n\n*(', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='I', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' did think', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' about this p', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='retty hard,', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' act', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ually — consid', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ered pu', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ns, went', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' down', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' a', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' rabbit hole about', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' qu', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='antum physics j', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='okes, bri', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='efly re', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='considered my', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' life choices, and land', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ed back', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' on a', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' classic.', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' S', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ometimes ', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ultra-thinking just', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' conf', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='irms the', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' tried-and-true is', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' still', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=' fun', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='ny.)*', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content='', additional_kwargs={}, response_metadata={'stop_reason': 'end_turn', 'stop_sequence': None}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 0, 'output_tokens': 175, 'total_tokens': 175}, tool_call_chunks=[])
+AIMessageChunk(content='', additional_kwargs={}, response_metadata={}, id='lc_run--019f275a-4a85-7762-b7a0-a3122b581d11', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[], chunk_position='last')
+{'text': '', 'type': 'text'}
+  type: text, keys: ['type', 'text']
+{ 'type': 'non_standard',
+  'value': { 'index': 0,
+             'signature': 'EvMCCmUIDxACGAIqQGBTvPUwXTS/gfe7urpqjMcGH9QV2VzATWs/exsqcUscqlAWR4k2ctvO8/letBf2MYIXmWkx+8IW99//ENnk7EYyD2NsYXVkZS1zb25uZXQtNTgAQgh0aGlua2luZxIML43gxLXDuHrZ6ux0Ggzyrx2MVAg/6NwYzL4iMJD0ggKPnAO3Urf5Xq/fYedW5QmRBIhH7ASBbyXJghOq8faBqA1FPf/2CPXQIMhB+Cq7Ad2zLqjh/tCDJ51ub8me7fPG9JK5ahtZ+BW42AT54vLQ0Pw7j0zQBcH9+V2olQQEAq0EJWQ7biuoOmY1UkxRsNQMtFGTpOuT9KxkH+iG7PyhPU/vtcBfF7Te6Jszqj2RnL4KFH5cproJgROoRcZn4tqO4bcPyBI5Ig08RJJRTZXnjwCTzTZilIYSD8qJGsEBVFdN8QDcXxkiCEm7PV3znDHG+dY7JKZdYT39taivieYubDaV5kdDuqoM7j8YAQ==',
+             'thinking': 'The user is asking for a joke and wants me to put '
+                         'real effort into making it genuinely funny and '
+                         'clever rather than just throwing something together.',
+             'type': 'thinking'}}
+  type: non_standard, keys: ['type', 'value']
+{ 'text': 'Why do programmers prefer dark mode?\n'
+          '\n'
+          'Because light attracts bugs.\n'
+          '\n'
+          '*(I did think about this pretty hard, actually — considered puns, '
+          'went down a rabbit hole about quantum physics jokes, briefly '
+          'reconsidered my life choices, and landed back on a classic. '
+          'Sometimes ultra-thinking just confirms the tried-and-true is still '
+          'funny.)*',
+  'type': 'text'}
+  type: text, keys: ['type', 'text']
+Block types in response: ['text', 'thinking', 'text']
+Full response usage metadata: {'input_tokens': 15, 'output_tokens': 175, 'total_tokens': 190, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
+
+==================================================
+Testing: claude-sonnet-5
+==================================================
+AIMessageChunk(content=[], additional_kwargs={}, response_metadata={'model_name': 'claude-sonnet-5', 'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'I', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': "'m thinking about crafting something genuinely clever rather than relying on a standard", 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' joke—maybe something meta that plays on the absurdity of "ultra thinking" a', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' simple request, like a joke about an AI overthinking the task', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' itself.', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'signature': 'EogJCmMIDxgCKkAj6HU3nSPUFQWaZ6vSPSfhnmExWYSKRKJ6YMAeTBhNgvdJ0om/hoaBhGIhStZTebTN+/osA6H/AKJkW2/x7dxRMg9jbGF1ZGUtc29ubmV0LTU4AEIIdGhpbmtpbmcSDGdLsbaAWqXX7wVNvBoMgPzZwO2NYNfzYXgXIjBSV39qtZjw+u7Wi73ZRH0WOd+cjQT4O+Zig0TRKGc+TFPZg4iwq2CswN2vN264aCgq0gfJr3rfCGiol7Eh0kM3/fg+guyyNrl59I4NF6ZcqLhAG8RE2/6OJCorU19YgUCTsxq676OfNs3zDZCVrjLsi5IVeCf5rPa3quvEhdmGWjPN1l9oUmJWEUB2kImoilpS5ehtlYn7WXU6AYvW/xRAPuwKiRF7wj4eWupybuMfTrqe5mzX8HGAorppPiBEHMZkb4iEM4DSoBwQxr9Gg9KdnX/czDlz00SEthH1rkrjkE0vrB93cn3u0J42sYQGuLkYOGFV2XfmuQar74dHo5KY4SE3mm1FaJjbgx6KF2l1au94/3bOtRLN0WZ/aENr4ixtk4hSvDhJh/+ekwWgZELKVNeywpwbZsTvHnipgls2ffaxNsFJyYAzm9/KKvCCbbWStnye9tyeBLvvTm6sLKojvWu3AcRe52be8XSN6kJld0kpmc/hFO66c83CJkJy0uKfwEmK2tgoqUC2aFhjBLabUhNHcQT0MR2aW1vB+vymxAlS0vosDnHEoQCuqV87y/BM9fpkQbpWWbIFfyGta7T7/t2aIATzbQHZDZlapnDozE5+UVSJ34CuirCjfW4W0KDzerPa5WJBD/wUyE5QxslVUYo2Sjlp/FT4gq+BPICpIdr+FCS1lqBwihaWnK7n2uCOM0GJsMrrTQU1vqd5Ilf1jwRhZPoS6mZaJCODcRDcSaqQmUG9vhJULlJsYYURKvnj83ro368Gj4yhpfEZCwMXlsh8yHGQbzUd4FKcaDOHz4lQORAEXKvl5hvN+4RgWWYEjSx4GpUHpMfTHCfBMnwywlXLYQpfBIIh6JrJ5crwDYkeHFLg7SkJmRArzKWBcMUnm1TTyNptDWHmNL/QcDm5M3SpPynBwP9zbEvT6+dcOKl//1wn/BX4OLBC0RAeko3NqER0B0/B9bXPcFxg9dtpfYAdkmKJVyeDhqkSm79axbCZi0w4/eGxhVquoKbpNFdwnIfCMkBwqIVNrnvR5a6Lp6DvNNgzgEJMDM/i/hGAAXCWbv+MLD02yzVm2YOJBL8a31+Nmi7yAlu2lH73v2bluhWtpZR2EDtZQmr7qaFAP7CCr2jFJUxNGEtD3moJaS03QhWJw0VS3AmguCdmjmBA77dBKfCLti3+WdaGaScSe7QdwkbsCmAgYS5+PeaH+ci8sTHVYgHmOARUAsVUahgCGvVqHwxQ6EjNMFDA5NcUYbbP8vQQUB/YIKDsAcu0NDczrwaq14T9yH2O1bs0gU+abuvfeQISOkACBfcn+uHtVVPaC0APNwOPCjofxAUClfaYUmLVO7juBLg+aK0+XqnrF7AvvaEYAQ==', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': '*cracks knuckles, dims', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': ' the lights, enters deep contemplation mode*\n\nWhy did the AI c', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'ross the road?\n\n...\n\nIt didn\'t. It spent so long "', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'ultra thinking" about the optimal crossing strategy, calculating traffic pat', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'terns, ethical implications, and 47 alternate routes that the light chang', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'ed, the road closed for construction, and by the time it decided,', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': ' the chicken had already made it across and was writing a memoir about it.\n\n*re-em', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'erges from thinking* \n\nSometimes the best joke is just... not over', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': 'thinking it. 🐔', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[], additional_kwargs={}, response_metadata={'stop_reason': 'end_turn', 'stop_sequence': None, 'model_provider': 'anthropic'}, id='lc_run--019f275a-5ec0-7510-88be-790e30edd85f', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 15, 'output_tokens': 512, 'total_tokens': 527, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}, tool_call_chunks=[], chunk_position='last')
+{ 'extras': { 'signature': 'EogJCmMIDxgCKkAj6HU3nSPUFQWaZ6vSPSfhnmExWYSKRKJ6YMAeTBhNgvdJ0om/hoaBhGIhStZTebTN+/osA6H/AKJkW2/x7dxRMg9jbGF1ZGUtc29ubmV0LTU4AEIIdGhpbmtpbmcSDGdLsbaAWqXX7wVNvBoMgPzZwO2NYNfzYXgXIjBSV39qtZjw+u7Wi73ZRH0WOd+cjQT4O+Zig0TRKGc+TFPZg4iwq2CswN2vN264aCgq0gfJr3rfCGiol7Eh0kM3/fg+guyyNrl59I4NF6ZcqLhAG8RE2/6OJCorU19YgUCTsxq676OfNs3zDZCVrjLsi5IVeCf5rPa3quvEhdmGWjPN1l9oUmJWEUB2kImoilpS5ehtlYn7WXU6AYvW/xRAPuwKiRF7wj4eWupybuMfTrqe5mzX8HGAorppPiBEHMZkb4iEM4DSoBwQxr9Gg9KdnX/czDlz00SEthH1rkrjkE0vrB93cn3u0J42sYQGuLkYOGFV2XfmuQar74dHo5KY4SE3mm1FaJjbgx6KF2l1au94/3bOtRLN0WZ/aENr4ixtk4hSvDhJh/+ekwWgZELKVNeywpwbZsTvHnipgls2ffaxNsFJyYAzm9/KKvCCbbWStnye9tyeBLvvTm6sLKojvWu3AcRe52be8XSN6kJld0kpmc/hFO66c83CJkJy0uKfwEmK2tgoqUC2aFhjBLabUhNHcQT0MR2aW1vB+vymxAlS0vosDnHEoQCuqV87y/BM9fpkQbpWWbIFfyGta7T7/t2aIATzbQHZDZlapnDozE5+UVSJ34CuirCjfW4W0KDzerPa5WJBD/wUyE5QxslVUYo2Sjlp/FT4gq+BPICpIdr+FCS1lqBwihaWnK7n2uCOM0GJsMrrTQU1vqd5Ilf1jwRhZPoS6mZaJCODcRDcSaqQmUG9vhJULlJsYYURKvnj83ro368Gj4yhpfEZCwMXlsh8yHGQbzUd4FKcaDOHz4lQORAEXKvl5hvN+4RgWWYEjSx4GpUHpMfTHCfBMnwywlXLYQpfBIIh6JrJ5crwDYkeHFLg7SkJmRArzKWBcMUnm1TTyNptDWHmNL/QcDm5M3SpPynBwP9zbEvT6+dcOKl//1wn/BX4OLBC0RAeko3NqER0B0/B9bXPcFxg9dtpfYAdkmKJVyeDhqkSm79axbCZi0w4/eGxhVquoKbpNFdwnIfCMkBwqIVNrnvR5a6Lp6DvNNgzgEJMDM/i/hGAAXCWbv+MLD02yzVm2YOJBL8a31+Nmi7yAlu2lH73v2bluhWtpZR2EDtZQmr7qaFAP7CCr2jFJUxNGEtD3moJaS03QhWJw0VS3AmguCdmjmBA77dBKfCLti3+WdaGaScSe7QdwkbsCmAgYS5+PeaH+ci8sTHVYgHmOARUAsVUahgCGvVqHwxQ6EjNMFDA5NcUYbbP8vQQUB/YIKDsAcu0NDczrwaq14T9yH2O1bs0gU+abuvfeQISOkACBfcn+uHtVVPaC0APNwOPCjofxAUClfaYUmLVO7juBLg+aK0+XqnrF7AvvaEYAQ=='},
+  'index': 0,
+  'reasoning': "I'm thinking about crafting something genuinely clever rather "
+               'than relying on a standard joke—maybe something meta that '
+               'plays on the absurdity of "ultra thinking" a simple request, '
+               'like a joke about an AI overthinking the task itself.',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning', 'index', 'extras']
+{ 'index': 1,
+  'text': '*cracks knuckles, dims the lights, enters deep contemplation mode*\n'
+          '\n'
+          'Why did the AI cross the road?\n'
+          '\n'
+          '...\n'
+          '\n'
+          'It didn\'t. It spent so long "ultra thinking" about the optimal '
+          'crossing strategy, calculating traffic patterns, ethical '
+          'implications, and 47 alternate routes that the light changed, the '
+          'road closed for construction, and by the time it decided, the '
+          'chicken had already made it across and was writing a memoir about '
+          'it.\n'
+          '\n'
+          '*re-emerges from thinking* \n'
+          '\n'
+          'Sometimes the best joke is just... not overthinking it. 🐔',
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'index']
+Block types in response: ['reasoning', 'text']
+Full response usage metadata: {'input_tokens': 15, 'output_tokens': 512, 'total_tokens': 527, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}
+
+==================================================
+Testing: vertex-claude-fable-5
+==================================================
+Error: Error code: 403 - [{'error': {'code': 403, 'message': "Access to this model requires data sharing to be enabled for publisher 'anthropic'. Please set `PublisherModelConfig.data_sharing_enabled_provider` to 'anthropic' via the setPublisherModelConfig API to use this model.", 'status': 'PERMISSION_DENIED'}}]
+
+==================================================
+Testing: claude-fable-5
+==================================================
+AIMessageChunk(content=[], additional_kwargs={}, response_metadata={'model_name': 'claude-fable-5', 'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'The', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' user wants me to think deeply and come up with a joke, so', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': " I'm brainstorming some options—starting with classics like the", 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' eyebrow joke, then considering something more meta that plays on the "ultra think" concept', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' itself, though that second idea got cut off mid', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': '-sentence.', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': "\n\nI'm le", 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'aning toward combining the meta angle with a solid joke—something that humorously acknowledges I', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' just spent all this computational effort to deliver a dad joke, which is funny', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' in itself. I could go with the well-known atoms joke, or try something fresher like', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': ' the paranoia librarian bit, but either way I want to keep it pun', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'thinking': 'chy and self-aware about the whole "maximum processing power" premise.', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'signature': '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', 'type': 'thinking', 'index': 0}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': '*Engaging maximum cognitive power... consulting', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': ' the great philosophers... running 47,000 simulations of comedic timing...*\n\nOkay. Here it is:\n\n**I asked the', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': ' librarian if they had any books on paranoia.**\n\n**She whispered, "They\'re right behind you."**\n\n...Yes, I used ultra-level', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': ' thinking and produced a dad joke. I regret nothing. 😄\n\nWant another one, or should I quit while', 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[{'text': " I'm ahead?", 'type': 'text', 'index': 1}], additional_kwargs={}, response_metadata={'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], tool_call_chunks=[])
+AIMessageChunk(content=[], additional_kwargs={}, response_metadata={'stop_reason': 'end_turn', 'stop_sequence': None, 'model_provider': 'anthropic'}, id='lc_run--019f275a-abdb-79f1-8587-134c4b1ba3e3', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 15, 'output_tokens': 711, 'total_tokens': 726, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}, tool_call_chunks=[], chunk_position='last')
+{ 'extras': { 'signature': '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'},
+  'index': 0,
+  'reasoning': 'The user wants me to think deeply and come up with a joke, so '
+               "I'm brainstorming some options—starting with classics like the "
+               'eyebrow joke, then considering something more meta that plays '
+               'on the "ultra think" concept itself, though that second idea '
+               'got cut off mid-sentence.\n'
+               '\n'
+               "I'm leaning toward combining the meta angle with a solid "
+               'joke—something that humorously acknowledges I just spent all '
+               'this computational effort to deliver a dad joke, which is '
+               'funny in itself. I could go with the well-known atoms joke, or '
+               'try something fresher like the paranoia librarian bit, but '
+               'either way I want to keep it punchy and self-aware about the '
+               'whole "maximum processing power" premise.',
+  'type': 'reasoning'}
+  type: reasoning, keys: ['type', 'reasoning', 'index', 'extras']
+{ 'index': 1,
+  'text': '*Engaging maximum cognitive power... consulting the great '
+          'philosophers... running 47,000 simulations of comedic timing...*\n'
+          '\n'
+          'Okay. Here it is:\n'
+          '\n'
+          '**I asked the librarian if they had any books on paranoia.**\n'
+          '\n'
+          '**She whispered, "They\'re right behind you."**\n'
+          '\n'
+          '...Yes, I used ultra-level thinking and produced a dad joke. I '
+          'regret nothing. 😄\n'
+          '\n'
+          "Want another one, or should I quit while I'm ahead?",
+  'type': 'text'}
+  type: text, keys: ['type', 'text', 'index']
+Block types in response: ['reasoning', 'text']
+Full response usage metadata: {'input_tokens': 15, 'output_tokens': 711, 'total_tokens': 726, 'input_token_details': {'cache_creation': 0, 'cache_read': 0}}

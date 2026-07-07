@@ -20,6 +20,23 @@ ANTHROPIC_CLAUDE_OPUS_4_7: dict[str, Any] = {
     "cache_control": {"type": "ephemeral"},
 }
 
+ANTHROPIC_CLAUDE_SONNET_5: dict[str, Any] = {
+    "model": "claude-sonnet-5",
+    "max_tokens": 128000,
+    "thinking": {"type": "adaptive", "display": "summarized"},
+    "output_config": {"effort": "xhigh"},
+    "cache_control": {"type": "ephemeral"},
+}
+
+ANTHROPIC_CLAUDE_FABLE_5: dict[str, Any] = {
+    "model": "claude-fable-5",
+    "max_tokens": 128000,
+    "thinking": {"type": "adaptive", "display": "summarized"},
+    "output_config": {"effort": "xhigh"},
+    "cache_control": {"type": "ephemeral"},
+}
+
+
 GEMINI_3_1_PRO: dict[str, Any] = {
     "model": "gemini-3.1-pro-preview",
     "temperature": 0.7,
@@ -90,6 +107,23 @@ VERTEX_CLAUDE_OPUS_4_7: dict[str, Any] = {
     "cache_control": {"type": "ephemeral"},
 }
 
+VERTEX_CLAUDE_SONNET_5: dict[str, Any] = {
+    "model": "claude-sonnet-5",
+    "max_tokens": 128000,
+    "thinking": {"type": "adaptive", "display": "summarized"},
+    "output_config": {"effort": "xhigh"},
+    "cache_control": {"type": "ephemeral"},
+}
+
+VERTEX_CLAUDE_FABLE_5: dict[str, Any] = {
+    "model": "claude-fable-5",
+    "max_tokens": 128000,
+    "thinking": {"type": "adaptive", "display": "summarized"},
+    "output_config": {"effort": "xhigh"},
+    "cache_control": {"type": "ephemeral"},
+}
+
+# Cortex models
 CORTEXT_CLAUDE_SONNET_4_5: dict[str, Any] = {
     "model": "claude-sonnet-4-6",
     "temperature": 1,
