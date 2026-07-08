@@ -113,45 +113,65 @@ def _event_time(event: dict) -> str:
     return event.get("lastTimestamp") or event.get("eventTime") or metadata.get("creationTimestamp") or ""
 
 
-def _warning_events(client, namespace: str, involved_name: str) -> list[dict]:
-    """Return the two most recent Warning events for an object, tolerating a read failure."""
-    try:
-        events = list_events(client, namespace, involved_name)
-    except Exception:
-        return []
+def _warnings(events: list[dict]) -> list[dict]:
+    """Filter events to Warnings, most recently seen first."""
     warnings = [event for event in events if event.get("type") == "Warning"]
     warnings.sort(key=_event_time, reverse=True)
-    return warnings[:2]
+    return warnings
 
 
-def _event_line(location: str, event: dict) -> str:
-    """Render one Warning event as a single diagnostic line."""
+def _event_line(event: dict) -> str:
+    """Render one Warning event as a single diagnostic line naming the object it is on."""
+    involved = event.get("involvedObject") or {}
+    location = f"{involved.get('namespace') or DEFAULT_NAMESPACE}/{involved.get('name', '')}"
     count = event.get("count") or 1
     suffix = f" (x{count})" if count and count > 1 else ""
     return f"  [{location}] {event.get('reason', '')}: {event.get('message', '')}{suffix}"
 
 
-def _gather_diagnostics(client, plan_name: str, children: list[dict]) -> list[str]:
-    """Collect Warning events for the plan and each not-ready child, why it is stuck.
+def _owns(child_name: str, involved_name: str) -> bool:
+    """True when an event's object is a child or one of the pods/replicasets it owns.
 
-    The plan's own reconcile failures (a forbidden apply) are posted by the
-    operator as events on the plan object in the default namespace; a child's
-    failures (an image that will not pull, a pod that will not schedule) are
-    posted on the child in its own namespace. Capped so the result stays a digest.
+    A controller's pods are named `<child>-<hash>`, so the real cause of a stuck
+    workload (ImagePullBackOff, FailedScheduling) lands on a name prefixed by the
+    child's, not on the child object itself.
     """
-    lines = [_event_line(plan_name, event) for event in _warning_events(client, DEFAULT_NAMESPACE, plan_name)]
+    return involved_name == child_name or involved_name.startswith(f"{child_name}-")
+
+
+def _gather_diagnostics(client, plan_name: str, children: list[dict], limit: int = 8) -> list[str]:
+    """Collect Warning events explaining why a plan is not converging.
+
+    Two sources: the operator's own failures are posted on the plan object in the
+    default namespace, and a child's failures land on the child or the pods it owns
+    in the child's namespace. Namespaces are scanned once and matched against every
+    not-ready child in them, so the reason surfaces without per-pod lookups. Capped
+    so the result stays a digest, never a log dump.
+    """
+    lines = [_event_line(event) for event in _warnings(_safe_events(client, DEFAULT_NAMESPACE, plan_name))[:2]]
+
+    by_namespace: dict[str, list[str]] = {}
     for child in children:
-        if child.get("ready"):
+        if child.get("ready") or not child.get("objectName"):
             continue
-        object_name = child.get("objectName")
-        if not object_name:
-            continue
-        namespace = child.get("namespace") or DEFAULT_NAMESPACE
-        location = f"{namespace}/{object_name}"
-        lines.extend(_event_line(location, event) for event in _warning_events(client, namespace, object_name))
-        if len(lines) >= 8:
-            break
-    return lines[:8]
+        by_namespace.setdefault(child.get("namespace") or DEFAULT_NAMESPACE, []).append(child["objectName"])
+
+    for namespace, names in by_namespace.items():
+        for event in _warnings(_safe_events(client, namespace)):
+            involved_name = (event.get("involvedObject") or {}).get("name", "")
+            if any(_owns(name, involved_name) for name in names):
+                lines.append(_event_line(event))
+                if len(lines) >= limit:
+                    return lines
+    return lines[:limit]
+
+
+def _safe_events(client, namespace: str, involved_name: str | None = None) -> list[dict]:
+    """List events, returning an empty list rather than raising when they cannot be read."""
+    try:
+        return list_events(client, namespace, involved_name)
+    except Exception:
+        return []
 
 
 @tool(name_or_callable="declare_plan", description=DECLARE_PLAN_DESCRIPTION)

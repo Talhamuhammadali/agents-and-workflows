@@ -226,13 +226,15 @@ def delete_cr(client: dynamic.DynamicClient, name: str) -> None:
     resource.delete(name=name)
 
 
-def list_events(client: dynamic.DynamicClient, namespace: str, involved_name: str) -> list[dict]:
-    """List the Kubernetes events for one object in a namespace, as object dicts.
+def list_events(client: dynamic.DynamicClient, namespace: str, involved_name: str | None = None) -> list[dict]:
+    """List Kubernetes events in a namespace, as object dicts, optionally by object.
 
     Used to dive deeper when a plan will not converge: the reason a child is stuck
     (an image that will not pull, a pod that will not schedule) and the operator's
     own reconcile failures are recorded as events on the involved object, not in
-    the plan status, so this reads them back.
+    the plan status, so this reads them back. A child's real cause usually sits on
+    the pods it owns, not the child itself, so the whole-namespace form (no
+    involved_name) lets the caller match a child and its pods by name.
 
     Parameters
     ----------
@@ -242,16 +244,17 @@ def list_events(client: dynamic.DynamicClient, namespace: str, involved_name: st
         Namespace the events live in; for a cluster-scoped object the operator's
         events are posted to the default namespace.
     involved_name
-        The metadata.name of the object whose events are wanted.
+        The metadata.name of the object whose events are wanted, or None for every
+        event in the namespace.
 
     Returns
     -------
     list of dict
-        Every event whose involvedObject has the given name. Empty when none or
-        when events cannot be read.
+        The matching events. Empty when none exist.
     """
     resource = client.resources.get(api_version="v1", kind="Event")
-    listing = resource.get(namespace=namespace, field_selector=f"involvedObject.name={involved_name}")
+    field_selector = f"involvedObject.name={involved_name}" if involved_name else None
+    listing = resource.get(namespace=namespace, field_selector=field_selector)
     return [item.to_dict() for item in listing.items]
 
 
