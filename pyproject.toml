@@ -11,6 +11,7 @@ dependencies = [
     "kubernetes>=36.0.2",
     "langchain>=1.2.13",
     "langchain-anthropic>=1.4.0",
+    "langchain-aws>=1.7.4",
     "langchain-azure-ai>=1.2.1",
     "langchain-google-genai>=4.2.1",
     "langchain-google-vertexai>=3.2.2",
