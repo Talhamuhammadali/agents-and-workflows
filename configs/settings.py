@@ -123,6 +123,19 @@ VERTEX_CLAUDE_FABLE_5: dict[str, Any] = {
     "cache_control": {"type": "ephemeral"},
 }
 
+# Enterprise (AWS Bedrock) models
+BEDROCK_NEMOTRON_NANO_3_30B: dict[str, Any] = {
+    "model": "nvidia.nemotron-nano-3-30b",
+    "region_name": "us-east-1",
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "max_tokens": 8192,
+    # langchain-aws only allowlists known-streaming providers; nvidia isn't one.
+    "disable_streaming": False,
+    # Takes 'none' | 'low' | 'medium' | 'high'; only 'high' reliably emits a trace.
+    "additional_model_request_fields": {"reasoning_effort": "high"},
+}
+
 # Cortex models
 CORTEXT_CLAUDE_SONNET_4_5: dict[str, Any] = {
     "model": "claude-sonnet-4-6",

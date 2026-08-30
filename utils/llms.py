@@ -29,6 +29,7 @@ from configs.settings import (
     VERTEX_GEMINI_2_5_PRO,
     VERTEX_GEMINI_3_1_PRO,
 )
+from utils.aws_bedrock import get_bedrock_nemotron_nano_3_30b
 from utils.snowflake import get_cortext_claude_sonnet_4_5
 
 load_dotenv()
@@ -69,8 +70,16 @@ vertex_claude_fable_5 = ChatAnthropicVertex(
     project="ekai-dev",
     location="global",
 )
+# Enterprise (AWS Bedrock) models
+bedrock_nemotron_nano_3_30b = get_bedrock_nemotron_nano_3_30b()
+
 # Cortex models
-cortext_claude_sonnet_4_5 = get_cortext_claude_sonnet_4_5()
+# Snowflake PAT expires; don't let it take down every other provider at import.
+try:
+    cortext_claude_sonnet_4_5 = get_cortext_claude_sonnet_4_5()
+except Exception as exc:  # noqa: BLE001
+    print(f"Skipping Cortex model, session failed: {exc}")
+    cortext_claude_sonnet_4_5 = None
 
 
 class Model(StrEnum):
@@ -91,9 +100,10 @@ class Model(StrEnum):
     VERTEX_CLAUDE_OPUS_4_7 = "vertex-claude-opus-4-7"
     VERTEX_CLAUDE_SONNET_5 = "vertex-claude-sonnet-5"
     VERTEX_CLAUDE_FABLE_5 = "vertex-claude-fable-5"
+    BEDROCK_NEMOTRON_NANO_3_30B = "bedrock-nemotron-nano-3-30b"
 
 
-MODELS: dict[Model, BaseChatModel] = {
+MODELS: dict[Model, BaseChatModel | None] = {
     Model.CLAUDE: anthropic_claude_sonnet_4_6,
     Model.CLAUDE_OPUS_4_7: anthropic_claude_opus_4_7,
     Model.CLAUDE_SONNET_5: anthropic_claude_sonnet_5,
@@ -109,6 +119,7 @@ MODELS: dict[Model, BaseChatModel] = {
     Model.VERTEX_CLAUDE_SONNET_5: vertex_claude_sonnet_5,
     Model.VERTEX_CLAUDE_FABLE_5: vertex_claude_fable_5,
     Model.CORTEXT_CLAUDE_SONNET_4_5: cortext_claude_sonnet_4_5,
+    Model.BEDROCK_NEMOTRON_NANO_3_30B: bedrock_nemotron_nano_3_30b,
 }
 
 
@@ -143,6 +154,7 @@ def test_llm(name: str, llm: BaseChatModel) -> None:
             block_types.append(block_type)
         print(f"Block types in response: {block_types}")
         print(f"Full response usage metadata: {ai_message.usage_metadata}")
+        print(f"AI Message response metadata: {ai_message.response_metadata}")
         # print("Full ai message: \n\n")
         # pprint(ai_message.model_dump(), indent=2)
     except Exception as e:
@@ -154,13 +166,15 @@ if __name__ == "__main__":
     # All llms list
     ALL_LLMS = [model for model in Model]
 
+    # All
+    # TEST_LLMS = ALL_LLMS
+
     # test subset of llms
     TEST_LLMS = [
-        Model.VERTEX_CLAUDE_SONNET_5,
-        Model.CLAUDE_SONNET_5,
-        Model.VERTEX_CLAUDE_FABLE_5,
-        Model.CLAUDE_FABLE_5,
+        Model.BEDROCK_NEMOTRON_NANO_3_30B,
     ]
-    test_pairs = [(name.value, MODELS[name]) for name in TEST_LLMS]
+
+
+    test_pairs = [(name.value, MODELS[name]) for name in TEST_LLMS if MODELS[name] is not None]
     for name, llm in test_pairs:
         test_llm(name, llm)
