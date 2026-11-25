@@ -136,6 +136,15 @@ BEDROCK_NEMOTRON_NANO_3_30B: dict[str, Any] = {
     "additional_model_request_fields": {"reasoning_effort": "high"},
 }
 
+# Neo cloud (Evroc) models, served over an OpenAI-compatible Chat Completions API
+EVROC_GLM_5_3: dict[str, Any] = {
+    "model": "zai-org/GLM-5.3",
+    "temperature": 1,
+    "max_tokens": 16384,
+    "streaming": True,
+    "stream_usage": True,
+}
+
 # Cortex models
 CORTEXT_CLAUDE_SONNET_4_5: dict[str, Any] = {
     "model": "claude-sonnet-4-6",

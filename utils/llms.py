@@ -30,6 +30,7 @@ from configs.settings import (
     VERTEX_GEMINI_3_1_PRO,
 )
 from utils.aws_bedrock import get_bedrock_nemotron_nano_3_30b
+from utils.evroc import get_evroc_glm_5_3
 from utils.snowflake import get_cortext_claude_sonnet_4_5
 
 load_dotenv()
@@ -73,6 +74,9 @@ vertex_claude_fable_5 = ChatAnthropicVertex(
 # Enterprise (AWS Bedrock) models
 bedrock_nemotron_nano_3_30b = get_bedrock_nemotron_nano_3_30b()
 
+# Neo cloud (Evroc) models
+evroc_glm_5_3 = get_evroc_glm_5_3()
+
 # Cortex models
 # Snowflake PAT expires; don't let it take down every other provider at import.
 try:
@@ -101,6 +105,7 @@ class Model(StrEnum):
     VERTEX_CLAUDE_SONNET_5 = "vertex-claude-sonnet-5"
     VERTEX_CLAUDE_FABLE_5 = "vertex-claude-fable-5"
     BEDROCK_NEMOTRON_NANO_3_30B = "bedrock-nemotron-nano-3-30b"
+    EVROC_GLM_5_3 = "evroc-glm-5-3"
 
 
 MODELS: dict[Model, BaseChatModel | None] = {
@@ -120,6 +125,7 @@ MODELS: dict[Model, BaseChatModel | None] = {
     Model.VERTEX_CLAUDE_FABLE_5: vertex_claude_fable_5,
     Model.CORTEXT_CLAUDE_SONNET_4_5: cortext_claude_sonnet_4_5,
     Model.BEDROCK_NEMOTRON_NANO_3_30B: bedrock_nemotron_nano_3_30b,
+    Model.EVROC_GLM_5_3: evroc_glm_5_3,
 }
 
 
@@ -171,7 +177,7 @@ if __name__ == "__main__":
 
     # test subset of llms
     TEST_LLMS = [
-        Model.BEDROCK_NEMOTRON_NANO_3_30B,
+        Model.EVROC_GLM_5_3,
     ]
 
 
